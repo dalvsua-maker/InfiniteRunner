@@ -156,10 +156,12 @@ function manejarObstaculos() {
 
     ctx.fillStyle = "gold"; // Cuerpo
     ctx.fillRect(obs.x, obs.y, obs.ancho, obs.alto);
-    if (detectarColision(personaje, obs)) {
-      juegoTerminado = true;
-      enviarPuntuacion();
-    }
+ // Dentro de manejarObstaculos
+if (detectarColision(personaje, obs) && !juegoTerminado) { // <--- Añadimos !juegoTerminado
+    juegoTerminado = true;
+    enviarPuntuacion(); // Esta será ahora la ÚNICA llamada en todo el script
+}
+
     // 3. Optimización: Si el obstáculo se sale por la izquierda, quitarlo de la lista
     if (obs.x < -obs.ancho) {
       obstaculos.splice(i, 1);
@@ -203,7 +205,7 @@ function actualizar() {
     return; // No sigue ejecutando el juego hasta que elijas
   }
   if (juegoTerminado) {
-     enviarPuntuacion();
+   
     ctx.fillStyle = "rgba(0,0,0,0.5)"; // Fondo semitransparente
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
