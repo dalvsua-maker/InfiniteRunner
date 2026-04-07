@@ -1,10 +1,19 @@
 const express = require('express');
-const mysql = require('mysql2');
 const cors = require('cors');
+const mysql = require('mysql2');
 
 const app = express();
-app.use(cors());
+
+// Borra el app.use(cors()) anterior y pon estas 4 líneas justo después de "const app = express();"
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 app.use(express.json());
+
+
+
 
 // Configuración de la conexión a MySQL
 const db = mysql.createConnection({
@@ -23,6 +32,9 @@ db.connect(err => {
     console.log("✅ Servidor conectado a la base de datos en la NUBE (Railway)");
 });
 
+app.get('/', (req, res) => {
+    res.send("Servidor del Vaquero funcionando ✅");
+});
 
 // Ruta para guardar puntuación
 app.post('/guardar-score', (req, res) => {

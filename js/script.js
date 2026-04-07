@@ -30,8 +30,9 @@ function enviarPuntuacion() {
     };
 
     // Cambiamos el localhost por tu servidor real en la nube
-    fetch('https://onrender.com', {
+    fetch('https://infiniterunner.onrender.com', {
         method: 'POST',
+         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
     })
