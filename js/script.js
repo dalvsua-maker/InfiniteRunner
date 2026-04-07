@@ -29,7 +29,8 @@ function enviarPuntuacion() {
         dificultad: modoDificil ? "Extremo" : "Normal"
     };
 
-    fetch('http://localhost:3000/guardar-score', {
+    // Cambiamos el localhost por tu servidor real en la nube
+    fetch('https://onrender.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
@@ -38,6 +39,7 @@ function enviarPuntuacion() {
     .then(data => console.log(data.mensaje))
     .catch(err => console.error("Error al guardar:", err));
 }
+
 function dibujarPersonaje() {
   // Cuerpo/Poncho
   ctx.fillStyle = "#795548"; // Marrón
