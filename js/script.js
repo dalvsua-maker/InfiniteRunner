@@ -30,7 +30,7 @@ function enviarPuntuacion() {
     };
 
     // Cambiamos el localhost por tu servidor real en la nube
-    fetch('https://infiniterunner.onrender.com', {
+    fetch('https://infiniterunner.onrender.com/guardar-score', {
         method: 'POST',
          mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
