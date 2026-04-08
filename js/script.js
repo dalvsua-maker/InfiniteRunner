@@ -281,27 +281,44 @@ window.addEventListener("keydown", (e) => {
     }
   }
 });
-// CONTROL TÁCTIL PARA MÓVIL
-// Detectar cuando el dedo toca la pantalla
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    
-    if (!juegoIniciado || juegoTerminado) {
-        // Lógica de inicio/reinicio que ya tienes...
-        // (Asegúrate de llamar a actualizar() o reload() aquí)
+canvas.addEventListener("pointerdown", (e) => {
+    // 1. Obtener las coordenadas reales donde se pulsó
+    const rect = canvas.getBoundingClientRect();
+    const clickY = e.clientY - rect.top; // Posición Y dentro del canvas visual
+    const alturaTotal = rect.height;    // Altura que el canvas ocupa en pantalla
+
+    // --- LÓGICA DE MENÚ (Elegir dificultad) ---
+    if (!juegoIniciado) {
+        // Si pulsas en la mitad superior (menos del 50% de la altura)
+        if (clickY < alturaTotal / 2) {
+            modoDificil = false; // MODO NORMAL
+            console.log("Seleccionado: Normal");
+        } else {
+            modoDificil = true;  // MODO EXTREMO
+            console.log("Seleccionado: Extremo");
+        }
+        
+        juegoIniciado = true;
+        actualizar(); // Arrancar el juego
         return;
     }
 
+    // --- LÓGICA DE REINICIO ---
+    if (juegoTerminado) {
+        document.location.reload();
+        return;
+    }
+
+    // --- LÓGICA DE SALTO ---
     if (personaje.enSuelo) {
         personaje.dy = -personaje.salto;
         personaje.enSuelo = false;
-        teclaPulsada = true; // Forzamos que el salto sea "largo" al empezar
+        teclaPulsada = true; // Para que el salto sea largo si mantienes
     }
-}, { passive: false });
+});
 
-canvas.addEventListener("touchend", () => {
-    // Solo permitimos que se "corte" el salto después de un pequeño delay
-    // o simplemente quitamos la gravedad doble para móvil
-    teclaPulsada = false; 
+// Para el salto corto (soltar el dedo/ratón)
+window.addEventListener("pointerup", () => {
+    teclaPulsada = false;
 });
 actualizar();
