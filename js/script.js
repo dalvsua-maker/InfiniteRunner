@@ -20,7 +20,18 @@ let personaje = {
   enSuelo: false,
 };
 // Añade esto al principio para pedir el nombre al iniciar
-let nombreJugador = prompt("Introduce tu nombre de vaquero:") || "Forastero";
+// Intentamos recuperar el nombre del "almacén" del navegador
+let nombreGuardado = localStorage.getItem("vaqueroNombre");
+let nombreJugador;
+
+if (nombreGuardado) {
+    // Si ya existe, lo usamos directamente
+    nombreJugador = nombreGuardado;
+} else {
+    // Si no existe, lo preguntamos y lo guardamos para la próxima vez
+    nombreJugador = prompt("Introduce tu nombre de vaquero:") || "Forastero";
+    localStorage.setItem("vaqueroNombre", nombreJugador);
+}
 
 function enviarPuntuacion() {
     const datos = {
