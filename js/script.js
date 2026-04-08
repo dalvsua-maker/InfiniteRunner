@@ -280,35 +280,33 @@ window.addEventListener("keydown", (e) => {
   }
 });
 // CONTROL TÁCTIL PARA MÓVIL
+// Detectar cuando el dedo toca la pantalla
 canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault(); // Evita scroll accidental
+    e.preventDefault();
+    teclaPulsada = true; // <--- IMPORTANTE: Esto activa el "salto largo"
 
-    // 1. Si estamos en el menú, detectamos dónde toca el usuario
     if (!juegoIniciado) {
         const touchY = e.touches[0].clientY - canvas.getBoundingClientRect().top;
-        const canvasHeight = canvas.offsetHeight;
-
-        // Dividimos la pantalla en dos zonas invisibles para elegir modo
-        if (touchY < canvasHeight / 2) {
-            modoDificil = false; // Zona superior = Normal
-        } else {
-            modoDificil = true;  // Zona inferior = Extremo
-        }
+        if (touchY < canvas.offsetHeight / 2) modoDificil = false;
+        else modoDificil = true;
         juegoIniciado = true;
         actualizar();
         return;
     }
 
-    // 2. Si el juego ha terminado, un toque reinicia (como la R)
     if (juegoTerminado) {
         document.location.reload();
         return;
     }
 
-    // 3. Si el juego está en marcha, el toque hace saltar (como Espacio)
     if (personaje.enSuelo) {
         personaje.dy = -personaje.salto;
         personaje.enSuelo = false;
     }
 }, { passive: false });
+
+// Detectar cuando el dedo deja de tocar la pantalla
+canvas.addEventListener("touchend", () => {
+    teclaPulsada = false; // <--- Esto permite hacer el salto corto si solo das un toque rápido
+});
 actualizar();
