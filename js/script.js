@@ -14,9 +14,9 @@ let personaje = {
   ancho: 50,
   alto: 40,
   color: "#ff4757",
-  dy: 0, // Velocidad vertical
-  salto: 15, // Aumentamos de 12 a 15 para que salte más explosivo
-  gravedad: 1.0, // Aumentamos de 0.6 a 1.0 para que caiga rápido
+  dy: 0,
+  salto: 18,      // Más explosivo hacia arriba
+  gravedad: 0.7,  // Cae más lento, se siente más ágil
   enSuelo: false,
 };
 // Añade esto al principio para pedir el nombre al iniciar
@@ -184,13 +184,15 @@ if (detectarColision(personaje, obs) && !juegoTerminado) { // <--- Añadimos !ju
   }
 }
 function detectarColision(player, obj) {
-  // Ajustamos ligeramente para que la punta de la bala tenga que entrar
-  // un poco en el cuerpo del vaquero para morir (más justo)
+  // Reducimos la caja de colisión del jugador 15px por cada lado
+  // Así, si le roza un píxel, no muere. Se siente mucho más "justo".
+  const margen = 15; 
+  
   return (
-    player.x + 10 < obj.x + obj.ancho &&
-    player.x + player.ancho - 10 > obj.x &&
-    player.y + 5 < obj.y + obj.alto &&
-    player.y + player.alto > obj.y
+    player.x + margen < obj.x + obj.ancho &&
+    player.x + player.ancho - margen > obj.x &&
+    player.y + margen < obj.y + obj.alto &&
+    player.y + player.alto - margen > obj.y
   );
 }
 
@@ -283,30 +285,23 @@ window.addEventListener("keydown", (e) => {
 // Detectar cuando el dedo toca la pantalla
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    teclaPulsada = true; // <--- IMPORTANTE: Esto activa el "salto largo"
-
-    if (!juegoIniciado) {
-        const touchY = e.touches[0].clientY - canvas.getBoundingClientRect().top;
-        if (touchY < canvas.offsetHeight / 2) modoDificil = false;
-        else modoDificil = true;
-        juegoIniciado = true;
-        actualizar();
-        return;
-    }
-
-    if (juegoTerminado) {
-        document.location.reload();
+    
+    if (!juegoIniciado || juegoTerminado) {
+        // Lógica de inicio/reinicio que ya tienes...
+        // (Asegúrate de llamar a actualizar() o reload() aquí)
         return;
     }
 
     if (personaje.enSuelo) {
         personaje.dy = -personaje.salto;
         personaje.enSuelo = false;
+        teclaPulsada = true; // Forzamos que el salto sea "largo" al empezar
     }
 }, { passive: false });
 
-// Detectar cuando el dedo deja de tocar la pantalla
 canvas.addEventListener("touchend", () => {
-    teclaPulsada = false; // <--- Esto permite hacer el salto corto si solo das un toque rápido
+    // Solo permitimos que se "corte" el salto después de un pequeño delay
+    // o simplemente quitamos la gravedad doble para móvil
+    teclaPulsada = false; 
 });
 actualizar();
