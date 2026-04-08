@@ -268,5 +268,36 @@ window.addEventListener("keydown", (e) => {
     }
   }
 });
+// CONTROL TÁCTIL PARA MÓVIL
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault(); // Evita scroll accidental
 
+    // 1. Si estamos en el menú, detectamos dónde toca el usuario
+    if (!juegoIniciado) {
+        const touchY = e.touches[0].clientY - canvas.getBoundingClientRect().top;
+        const canvasHeight = canvas.offsetHeight;
+
+        // Dividimos la pantalla en dos zonas invisibles para elegir modo
+        if (touchY < canvasHeight / 2) {
+            modoDificil = false; // Zona superior = Normal
+        } else {
+            modoDificil = true;  // Zona inferior = Extremo
+        }
+        juegoIniciado = true;
+        actualizar();
+        return;
+    }
+
+    // 2. Si el juego ha terminado, un toque reinicia (como la R)
+    if (juegoTerminado) {
+        document.location.reload();
+        return;
+    }
+
+    // 3. Si el juego está en marcha, el toque hace saltar (como Espacio)
+    if (personaje.enSuelo) {
+        personaje.dy = -personaje.salto;
+        personaje.enSuelo = false;
+    }
+}, { passive: false });
 actualizar();
