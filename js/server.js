@@ -5,12 +5,9 @@ const mysql = require('mysql2');
 const app = express();
 
 // Borra el app.use(cors()) anterior y pon estas 4 líneas justo después de "const app = express();"
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+app.use(cors()); // Esto usa la librería que ya importaste arriba
 app.use(express.json());
+
 
 
 
