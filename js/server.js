@@ -1,12 +1,18 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Asegúrate de que esta línea esté
 const mysql = require('mysql2');
 
 const app = express();
 
-// Borra el app.use(cors()) anterior y pon estas 4 líneas justo después de "const app = express();"
-app.use(cors()); // Esto usa la librería que ya importaste arriba
+// Sustituye tu bloque manual por este:
+app.use(cors({
+    origin: '*', // Permite que cualquier persona desde cualquier sitio envíe datos
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
+
 
 
 
@@ -36,13 +42,15 @@ app.get('/', (req, res) => {
 // Ruta para guardar puntuación
 app.post('/guardar-score', (req, res) => {
     const { nombre, puntos, dificultad } = req.body;
+    
+    // Verificamos que lleguen datos para que el servidor no se rompa
+    if(!nombre || puntos === undefined) return res.status(400).send("Datos incompletos");
 
-    // 1. Insertar o buscar el usuario
     db.query('INSERT IGNORE INTO usuarios (nombre) VALUES (?)', [nombre], () => {
         db.query('SELECT id FROM usuarios WHERE nombre = ?', [nombre], (err, result) => {
-            const usuario_id = result[0].id;
+            if (err || !result[0]) return res.status(500).send("Error usuario");
             
-            // 2. Guardar el score
+            const usuario_id = result[0].id;
             db.query('INSERT INTO scores (usuario_id, puntos, dificultad) VALUES (?, ?, ?)', 
             [usuario_id, puntos, dificultad], (err) => {
                 if (err) return res.status(500).send(err);
@@ -51,6 +59,7 @@ app.post('/guardar-score', (req, res) => {
         });
     });
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
