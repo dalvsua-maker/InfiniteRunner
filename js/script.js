@@ -320,7 +320,7 @@ ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
             console.log("¡Nuevo récord personal alcanzado!");
         }
         
-        enviarPuntuacion(); // Llamamos a tu función para guardar en DB
+       
     }
   dibujarPuntuacion();
   puntuacion++;
