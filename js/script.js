@@ -311,6 +311,17 @@ ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
   dibujarPersonaje();
   crearObstaculo();
   manejarObstaculos();
+  if (juegoTerminado) {
+        let recordActual = modoDificil ? recordExtremo : recordNormal;
+        
+        if (puntuacion > recordActual) {
+            if (modoDificil) recordExtremo = puntuacion;
+            else recordNormal = puntuacion;
+            console.log("¡Nuevo récord personal alcanzado!");
+        }
+        
+        enviarPuntuacion(); // Llamamos a tu función para guardar en DB
+    }
   dibujarPuntuacion();
   puntuacion++;
   frameCount++; // Aumentamos el contador de tiempo del juego
@@ -353,6 +364,7 @@ canvas.addEventListener("pointerdown", (e) => {
             console.log("Seleccionado: Extremo");
         }
         obtenerTopScores();
+        obtenerMiRecord();
         juegoIniciado = true;
         actualizar(); // Arrancar el juego
         return;
@@ -371,7 +383,22 @@ canvas.addEventListener("pointerdown", (e) => {
         teclaPulsada = true; // Para que el salto sea largo si mantienes
     }
 });
+function obtenerMiRecord() {
+    const dificultad = modoDificil ? "Extremo" : "Normal";
+    const url = `https://infiniterunner.onrender.com/mi-record?nombre=${nombreJugador}&dificultad=${dificultad}`;
 
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (modoDificil) {
+                recordExtremo = data.record;
+            } else {
+                recordNormal = data.record;
+            }
+            console.log("Récord de la base de datos sincronizado:", data.record);
+        })
+        .catch(err => console.error("Error al sincronizar récord:", err));
+}
 // Para el salto corto (soltar el dedo/ratón)
 window.addEventListener("pointerup", () => {
     teclaPulsada = false;

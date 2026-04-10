@@ -59,7 +59,22 @@ app.post('/guardar-score', (req, res) => {
         });
     });
 });
+app.get('/mi-record', (req, res) => {
+    const { nombre, dificultad } = req.query;
 
+    const query = `
+        SELECT MAX(s.puntos) as record 
+        FROM scores s 
+        JOIN usuarios u ON s.usuario_id = u.id 
+        WHERE u.nombre = ? AND s.dificultad = ?
+    `;
+
+    db.query(query, [nombre, dificultad], (err, result) => {
+        if (err) return res.status(500).send(err);
+        const record = result[0].record || 0;
+        res.json({ record });
+    });
+});
 // Ruta para obtener el Top 5 de High Scores únicos
 app.get('/top-scores', (req, res) => {
     // Leemos la dificultad que viene en la URL
