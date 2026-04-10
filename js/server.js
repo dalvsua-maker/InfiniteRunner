@@ -62,15 +62,20 @@ app.post('/guardar-score', (req, res) => {
 
 // Ruta para obtener el Top 5 de High Scores únicos
 app.get('/top-scores', (req, res) => {
+    // Leemos la dificultad que viene en la URL
+    const dificultad = req.query.dificultad; 
+
     const query = `
         SELECT u.nombre, MAX(s.puntos) as puntos 
         FROM scores s 
         JOIN usuarios u ON s.usuario_id = u.id 
+        WHERE s.dificultad = ?
         GROUP BY u.id 
         ORDER BY puntos DESC 
         LIMIT 5
     `;
-    db.query(query, (err, results) => {
+
+    db.query(query, [dificultad], (err, results) => {
         if (err) return res.status(500).send(err);
         res.json(results);
     });

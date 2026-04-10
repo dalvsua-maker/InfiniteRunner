@@ -26,7 +26,7 @@ let personaje = {
 // Intentamos recuperar el nombre del "almacén" del navegador
 let nombreGuardado = localStorage.getItem("vaqueroNombre");
 let nombreJugador;
-
+obtenerTopScores();
 if (nombreGuardado) {
     nombreJugador = nombreGuardado;
 } else {
@@ -37,36 +37,40 @@ if (nombreGuardado) {
 }
 
 function enviarPuntuacion() {
-  // Actualizar récord personal local
-if (modoDificil) {
-      if (puntuacion > recordExtremo) {
-          recordExtremo = puntuacion;
-          localStorage.setItem("record_Extremo", recordExtremo);
-      }
-  } else {
-      if (puntuacion > recordNormal) {
-          recordNormal = puntuacion;
-          localStorage.setItem("record_Normal", recordNormal);
-      }
-  }
+    const datos = {
+        nombre: nombreJugador,
+        puntos: puntuacion,
+        dificultad: modoDificil ? "Extremo" : "Normal"
+    };
 
-  const datos = {
-    nombre: nombreJugador,
-    puntos: puntuacion,
-    dificultad: modoDificil ? "Extremo" : "Normal",
-  };
+    fetch('https://infiniterunner.onrender.com/guardar-score', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Servidor dice:", data.mensaje);
+        // JUSTO AQUÍ PEDIMOS EL TOP
+        obtenerTopScores(); 
+    })
+    .catch(err => console.error("Error al guardar:", err));
+}
 
-  fetch("https://infiniterunner.onrender.com/guardar-score", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  })
-  .then(() => {
-      // Pedir los datos del Ranking justo después de enviar
-      fetch('https://infiniterunner.onrender.com/top-scores')
+// Creamos esta función aparte para poder usarla cuando queramos
+function obtenerTopScores() {
+    // Creamos la URL con el "apellido" de la dificultad actual
+    const modoActual = modoDificil ? "Extremo" : "Normal";
+    const urlConFiltro = `https://infiniterunner.onrender.com/top-scores?dificultad=${modoActual}`;
+
+    fetch(urlConFiltro)
         .then(res => res.json())
-        .then(data => { listaTopScores = data; });
-  });
+        .then(data => {
+            console.log("Ranking del modo " + modoActual + " recibido:", data);
+            listaTopScores = data;
+        })
+        .catch(err => console.error("Error al obtener top:", err));
 }
 
 function dibujarPersonaje() {
@@ -247,31 +251,40 @@ function actualizar() {
     );
     return; // No sigue ejecutando el juego hasta que elijas
   }
-  if (juegoTerminado) {
-   
-    ctx.fillStyle = "rgba(0,0,0,0.5)"; // Fondo semitransparente
+if (juegoTerminado) {
+  // Dentro del bloque if (juegoTerminado)
+const tituloModo = modoDificil ? "TOP 5 EXTREMO" : "TOP 5 NORMAL";
+ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
+    // 1. Fondo más oscuro para que resalten las letras
+    ctx.fillStyle = "rgba(0, 0, 0, 0.75)"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "white";
-    ctx.font = "40px Arial";
-    ctx.fillText("¡GAME OVER!", canvas.width / 2 - 120, canvas.height / 2);
-    ctx.font = "20px Arial";
-    ctx.fillText(
-      "Pulsa 'R' para reiniciar",
-      canvas.width / 2 - 100,
-      canvas.height / 2 + 40,
-    );
-    ctx.fillStyle = "#F1C40F"; // Color dorado para el ranking
-ctx.font = "20px Arial";
-ctx.fillText("RANKING MUNDIAL:", canvas.width / 2 - 90, 130);
+    // 2. Título principal (Subido un poco más)
+    ctx.fillStyle = "#E74C3C"; // Rojo vibrante
+    ctx.font = "bold 45px Arial";
+    ctx.fillText("¡GAME OVER!", canvas.width / 2 - 140, 100);
 
-ctx.fillStyle = "white";
-ctx.font = "18px Arial";
-listaTopScores.forEach((score, index) => {
-    ctx.fillText((index + 1) + ". " + score.nombre + ": " + score.puntos, canvas.width / 2 - 80, 170 + (index * 30));
-});
-    return; // Detiene el bucle aquí
-  }
+    // 3. Ranking Mundial (Dorado y con espacio)
+    ctx.fillStyle = "#F1C40F";
+    ctx.font = "22px Arial";
+    ctx.fillText("🏆 TOP 5 VAQUEROS 🏆", canvas.width / 2 - 110, 160);
+
+    // 4. Lista de puntuaciones (Bajada para que no toque el título)
+    ctx.fillStyle = "white";
+    ctx.font = "18px Courier New"; // Fuente tipo consola queda muy bien
+    listaTopScores.forEach((score, index) => {
+        let yPos = 200 + (index * 30);
+        // Alineación simple: Número. Nombre : Puntos
+        ctx.fillText(`${index + 1}. ${score.nombre.padEnd(12)} : ${score.puntos}`, canvas.width / 2 - 100, yPos);
+    });
+
+    // 5. Instrucciones de reinicio (Abajo del todo)
+    ctx.fillStyle = "#BDC3C7"; // Gris claro
+    ctx.font = "16px Arial";
+    ctx.fillText("Pulsa 'R' o Toca para volver a intentar", canvas.width / 2 - 135, 370);
+    
+    return; 
+}
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar pantalla
 
   // 1. Cielo del desierto (Cambiamos el borrado por un color)
