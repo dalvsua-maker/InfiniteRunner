@@ -26,7 +26,7 @@ let personaje = {
 // Intentamos recuperar el nombre del "almacén" del navegador
 let nombreGuardado = localStorage.getItem("vaqueroNombre");
 let nombreJugador;
-obtenerTopScores();
+
 if (nombreGuardado) {
     nombreJugador = nombreGuardado;
 } else {
@@ -60,19 +60,25 @@ function enviarPuntuacion() {
 
 // Creamos esta función aparte para poder usarla cuando queramos
 function obtenerTopScores() {
-    // Creamos la URL con el "apellido" de la dificultad actual
     const modoActual = modoDificil ? "Extremo" : "Normal";
-    const urlConFiltro = `https://infiniterunner.onrender.com/top-scores?dificultad=${modoActual}`;
+    const url = `https://infiniterunner.onrender.com/top-scores?dificultad=${modoActual}`;
+    
+    console.log("Solicitando ranking a:", url);
 
-    fetch(urlConFiltro)
-        .then(res => res.json())
+    fetch(url)
+        .then(res => {
+            console.log("Status del servidor:", res.status);
+            return res.json();
+        })
         .then(data => {
-            console.log("Ranking del modo " + modoActual + " recibido:", data);
+            console.log("Datos recibidos:", data);
             listaTopScores = data;
         })
-        .catch(err => console.error("Error al obtener top:", err));
+        .catch(err => {
+            console.error("Error en la conexión con Render:", err);
+            listaTopScores = []; // Limpiamos en caso de error
+        });
 }
-
 function dibujarPersonaje() {
   // Cuerpo/Poncho
   ctx.fillStyle = "#795548"; // Marrón
@@ -346,7 +352,7 @@ canvas.addEventListener("pointerdown", (e) => {
             modoDificil = true;  // MODO EXTREMO
             console.log("Seleccionado: Extremo");
         }
-        
+        obtenerTopScores();
         juegoIniciado = true;
         actualizar(); // Arrancar el juego
         return;
