@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 let juegoIniciado = false;
 let modoDificil = false; // False = Normal (500), True = Extremo (50)
 let teclaPulsada = false;
-
+let puedeReiniciar = false;
 // 1. Nueva variable de estado al principio del archivo
 let juegoTerminado = false;
 let puntuacion = 0;
@@ -56,6 +56,9 @@ function enviarPuntuacion() {
         obtenerTopScores(); 
     })
     .catch(err => console.error("Error al guardar:", err));
+    // Seguridad extra: si el servidor tarda mucho, 
+    // permitimos reiniciar tras 1.5 segundos de todos modos
+    setTimeout(() => { puedeReiniciar = true; }, 1500);
 }
 
 // Creamos esta función aparte para poder usarla cuando queramos
@@ -285,9 +288,9 @@ ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
     });
 
     // 5. Instrucciones de reinicio (Abajo del todo)
-    ctx.fillStyle = "#BDC3C7"; // Gris claro
-    ctx.font = "16px Arial";
-    ctx.fillText("Pulsa 'R' o Toca para volver a intentar", canvas.width / 2 - 135, 370);
+   ctx.fillStyle = puedeReiniciar ? "#BDC3C7" : "#E74C3C"; 
+    const textoBoton = puedeReiniciar ? "Toca para volver a intentar" : "Guardando registro...";
+    ctx.fillText(textoBoton, canvas.width / 2 - 135, 370);
     
     return; 
 }
@@ -372,7 +375,11 @@ canvas.addEventListener("pointerdown", (e) => {
 
     // --- LÓGICA DE REINICIO ---
     if (juegoTerminado) {
-        document.location.reload();
+   if (puedeReiniciar) {
+            document.location.reload();
+        } else {
+            console.log("Espera un momento antes de reiniciar...");
+        }
         return;
     }
 
