@@ -60,7 +60,21 @@ app.post('/guardar-score', (req, res) => {
     });
 });
 
-
+// Ruta para obtener el Top 5 de High Scores únicos
+app.get('/top-scores', (req, res) => {
+    const query = `
+        SELECT u.nombre, MAX(s.puntos) as puntos 
+        FROM scores s 
+        JOIN usuarios u ON s.usuario_id = u.id 
+        GROUP BY u.id 
+        ORDER BY puntos DESC 
+        LIMIT 5
+    `;
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).send(err);
+        res.json(results);
+    });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
 

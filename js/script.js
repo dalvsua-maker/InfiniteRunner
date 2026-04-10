@@ -7,6 +7,9 @@ let teclaPulsada = false;
 // 1. Nueva variable de estado al principio del archivo
 let juegoTerminado = false;
 let puntuacion = 0;
+let listaTopScores = []; // Para el ranking global
+let recordNormal = localStorage.getItem("record_Normal") || 0; // Record personal Normal
+let recordExtremo = localStorage.getItem("record_Extremo") || 0; // Record personal Extremo
 // Configuración del personaje
 let personaje = {
   x: 50,
@@ -25,31 +28,45 @@ let nombreGuardado = localStorage.getItem("vaqueroNombre");
 let nombreJugador;
 
 if (nombreGuardado) {
-    // Si ya existe, lo usamos directamente
     nombreJugador = nombreGuardado;
 } else {
-    // Si no existe, lo preguntamos y lo guardamos para la próxima vez
-    nombreJugador = prompt("Introduce tu nombre de vaquero:") || "Forastero";
+    let input = prompt("Introduce tu nombre de vaquero:");
+    // Si no hay input, genera el Forastero único
+    nombreJugador = (input && input.trim() !== "") ? input : "Forastero#" + Math.floor(Math.random() * 9000 + 1000);
     localStorage.setItem("vaqueroNombre", nombreJugador);
 }
 
 function enviarPuntuacion() {
-    const datos = {
-        nombre: nombreJugador,
-        puntos: puntuacion,
-        dificultad: modoDificil ? "Extremo" : "Normal"
-    };
+  // Actualizar récord personal local
+if (modoDificil) {
+      if (puntuacion > recordExtremo) {
+          recordExtremo = puntuacion;
+          localStorage.setItem("record_Extremo", recordExtremo);
+      }
+  } else {
+      if (puntuacion > recordNormal) {
+          recordNormal = puntuacion;
+          localStorage.setItem("record_Normal", recordNormal);
+      }
+  }
 
-    // Cambiamos el localhost por tu servidor real en la nube
-    fetch('https://infiniterunner.onrender.com/guardar-score', {
-        method: 'POST',
-         mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-    })
-    .then(res => res.json())
-    .then(data => console.log(data.mensaje))
-    .catch(err => console.error("Error al guardar:", err));
+  const datos = {
+    nombre: nombreJugador,
+    puntos: puntuacion,
+    dificultad: modoDificil ? "Extremo" : "Normal",
+  };
+
+  fetch("https://infiniterunner.onrender.com/guardar-score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  })
+  .then(() => {
+      // Pedir los datos del Ranking justo después de enviar
+      fetch('https://infiniterunner.onrender.com/top-scores')
+        .then(res => res.json())
+        .then(data => { listaTopScores = data; });
+  });
 }
 
 function dibujarPersonaje() {
@@ -157,7 +174,17 @@ function crearObstaculo() {
 function dibujarPuntuacion() {
   ctx.fillStyle = "black";
   ctx.font = "20px Arial";
-  ctx.fillText("Puntuación: " + puntuacion, 20, 30);
+  ctx.fillText("Puntos: " + puntuacion, 20, 30);
+
+  // 1. Elegimos qué valor mostrar según el modo
+  let recordAMostrar = modoDificil ? recordExtremo : recordNormal;
+  
+  // 2. Elegimos qué etiqueta de texto poner
+  let nombreModo = modoDificil ? "Extremo" : "Normal";
+
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#555"; // Un gris para que no distraiga tanto como los puntos
+  ctx.fillText("Tu Récord (" + nombreModo + "): " + recordAMostrar, 20, 55);
 }
 function manejarObstaculos() {
   for (let i = 0; i < obstaculos.length; i++) {
@@ -234,6 +261,15 @@ function actualizar() {
       canvas.width / 2 - 100,
       canvas.height / 2 + 40,
     );
+    ctx.fillStyle = "#F1C40F"; // Color dorado para el ranking
+ctx.font = "20px Arial";
+ctx.fillText("RANKING MUNDIAL:", canvas.width / 2 - 90, 130);
+
+ctx.fillStyle = "white";
+ctx.font = "18px Arial";
+listaTopScores.forEach((score, index) => {
+    ctx.fillText((index + 1) + ". " + score.nombre + ": " + score.puntos, canvas.width / 2 - 80, 170 + (index * 30));
+});
     return; // Detiene el bucle aquí
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar pantalla
