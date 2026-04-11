@@ -1,14 +1,33 @@
 body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Evita cualquier rebote de página */
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    justify-content: center; /* Centra el juego verticalmente en la pantalla */
     align-items: center;
     background-color: #222;
-    color: white;
-    font-family: sans-serif;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+h1 {
+    font-size: 1.2rem; /* Un poco más pequeño para que no robe espacio al canvas */
+    margin: 10px 0;
+    color: #fff;
 }
 
 canvas {
     background-color: #fff;
     border: 4px solid #555;
     margin-top: 20px;
+    
+    /* Nuevas reglas para responsive */
+    width: 95%;            /* Ocupa el ancho del móvil */
+    max-width: 800px;      /* No se estira más de su tamaño real en PC */
+    height: auto;          /* La altura se ajusta sola para no deformarse */
+    display: block;        /* Ayuda al centrado */
+touch-action: none;          /* Evita scroll y zoom al tocar el juego */
+    -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul feo al tocar en iPhone */
+    user-select: none;    /* Evita que el móvil haga scroll al saltar */
 }

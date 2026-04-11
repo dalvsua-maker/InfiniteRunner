@@ -213,6 +213,9 @@ function manejarObstaculos() {
  // Dentro de manejarObstaculos
 if (detectarColision(personaje, obs) && !juegoTerminado) { // <--- Añadimos !juegoTerminado
     juegoTerminado = true;
+    if (navigator.vibrate) {
+    navigator.vibrate(100); // El móvil vibrará 100 milisegundos al morir
+}
     enviarPuntuacion(); // Esta será ahora la ÚNICA llamada en todo el script
 }
 
@@ -238,28 +241,33 @@ function detectarColision(player, obj) {
 
 function actualizar() {
   // PANTALLA DE MENÚ
-  if (!juegoIniciado) {
+ if (!juegoIniciado) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black";
-    ctx.font = "30px Arial";
-    ctx.fillText(
-      "ELIGE TU MODO",
-      canvas.width / 2 - 110,
-      canvas.height / 2 - 40,
-    );
-    ctx.font = "20px Arial";
-    ctx.fillText(
-      "Pulsa '1' para Modo Normal",
-      canvas.width / 2 - 120,
-      canvas.height / 2,
-    );
-    ctx.fillText(
-      "Pulsa '2' para Modo Extremo",
-      canvas.width / 2 - 125,
-      canvas.height / 2 + 30,
-    );
-    return; // No sigue ejecutando el juego hasta que elijas
-  }
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+
+    // Botón NORMAL
+    ctx.fillStyle = "#2ed573";
+    ctx.fillRect(200, 120, 400, 60); // Centrado: x=200, ancho=400
+    ctx.fillStyle = "white";
+    ctx.font = "bold 24px Arial";
+    ctx.fillText("MODO NORMAL", canvas.width / 2, 158);
+
+    // Botón EXTREMO
+    ctx.fillStyle = "#ff4757";
+    ctx.fillRect(200, 220, 400, 60);
+    ctx.fillStyle = "white";
+    ctx.fillText("MODO EXTREMO", canvas.width / 2, 258);
+
+    ctx.fillStyle = "#aaa";
+    ctx.font = "16px Arial";
+    ctx.fillText("Haz clic o toca el modo para empezar", canvas.width / 2, 330);
+
+    ctx.textAlign = "left"; // Reset para el resto del juego
+    return;
+}
 if (juegoTerminado) {
   // Dentro del bloque if (juegoTerminado)
 const tituloModo = modoDificil ? "TOP 5 EXTREMO" : "TOP 5 NORMAL";
@@ -351,25 +359,27 @@ window.addEventListener("keydown", (e) => {
   }
 });
 canvas.addEventListener("pointerdown", (e) => {
-    // 1. Obtener las coordenadas reales donde se pulsó
-    const rect = canvas.getBoundingClientRect();
-    const clickY = e.clientY - rect.top; // Posición Y dentro del canvas visual
-    const alturaTotal = rect.height;    // Altura que el canvas ocupa en pantalla
+const rect = canvas.getBoundingClientRect();
+    
+    // Factor de escala: relaciona el tamaño real (800x400) con el tamaño visual en pantalla
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
 
-    // --- LÓGICA DE MENÚ (Elegir dificultad) ---
+    // Posición del clic ajustada a la escala del juego
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
     if (!juegoIniciado) {
-        // Si pulsas en la mitad superior (menos del 50% de la altura)
-        if (clickY < alturaTotal / 2) {
-            modoDificil = false; // MODO NORMAL
-            console.log("Seleccionado: Normal");
-        } else {
-            modoDificil = true;  // MODO EXTREMO
-            console.log("Seleccionado: Extremo");
+        // Detectar si el clic está dentro del botón NORMAL (x:200-600, y:120-180)
+        if (clickX >= 200 && clickX <= 600 && clickY >= 120 && clickY <= 180) {
+            modoDificil = false;
+            iniciarPartida();
+        } 
+        // Detectar si el clic está dentro del botón EXTREMO (x:200-600, y:220-280)
+        else if (clickX >= 200 && clickX <= 600 && clickY >= 220 && clickY <= 280) {
+            modoDificil = true;
+            iniciarPartida();
         }
-        obtenerTopScores();
-        obtenerMiRecord();
-        juegoIniciado = true;
-        actualizar(); // Arrancar el juego
         return;
     }
 
@@ -390,6 +400,13 @@ canvas.addEventListener("pointerdown", (e) => {
         teclaPulsada = true; // Para que el salto sea largo si mantienes
     }
 });
+function iniciarPartida() {
+    console.log("Iniciando en modo:", modoDificil ? "Extremo" : "Normal");
+    obtenerTopScores();
+    obtenerMiRecord();
+    juegoIniciado = true;
+    actualizar();
+}
 function obtenerMiRecord() {
     const dificultad = modoDificil ? "Extremo" : "Normal";
     const url = `https://infiniterunner.onrender.com/mi-record?nombre=${nombreJugador}&dificultad=${dificultad}`;
