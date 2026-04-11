@@ -271,7 +271,7 @@ function actualizar() {
 if (juegoTerminado) {
   // Dentro del bloque if (juegoTerminado)
 const tituloModo = modoDificil ? "TOP 5 EXTREMO" : "TOP 5 NORMAL";
-ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
+//ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
     // 1. Fondo más oscuro para que resalten las letras
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
