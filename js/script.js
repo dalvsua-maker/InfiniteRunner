@@ -295,12 +295,17 @@ ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
         ctx.fillText(`${index + 1}. ${score.nombre.padEnd(12)} : ${score.puntos}`, canvas.width / 2 - 100, yPos);
     });
 
-    // 5. Instrucciones de reinicio (Abajo del todo)
-   ctx.fillStyle = puedeReiniciar ? "#BDC3C7" : "#E74C3C"; 
-    const textoBoton = puedeReiniciar ? "Toca para volver a intentar" : "Guardando registro...";
-    ctx.fillText(textoBoton, canvas.width / 2 - 135, 370);
-    
-    return; 
+ // 5. Instrucciones de reinicio (ESTO AHORA SÍ SE ACTUALIZARÁ)
+        ctx.textAlign = "center"; // Te recomiendo centrarlo de verdad
+        ctx.fillStyle = puedeReiniciar ? "#2ecc71" : "#E74C3C"; // Verde si ya puede, rojo si no
+        const textoBoton = puedeReiniciar ? "✅ Toca para volver a intentar" : "⌛ Guardando registro...";
+        ctx.font = "bold 22px Arial";
+        ctx.fillText(textoBoton, canvas.width / 2, 370);
+        ctx.textAlign = "left"; // Reset
+
+        // ¡LA CLAVE! Volvemos a llamar a actualizar para que detecte cuando 'puedeReiniciar' cambie
+        requestAnimationFrame(actualizar); 
+        return; // Salimos de la función
 }
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar pantalla
 
