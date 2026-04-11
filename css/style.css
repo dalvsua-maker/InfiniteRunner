@@ -1,33 +1,171 @@
+/* === ESTÉTICA OESTE ARTESANAL: CARTEL WANTED === */
+
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+/* Reset global */
+* {
+    box-sizing: border-box;
+    image-rendering: pixelated; /* Crucial para pixel art */
+}
+
+/* 1. La Pared del Saloon: Simulación de madera weathered weathered weathered weathered weathered weathered weathered weathered */
 body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Evita cualquier rebote de página */
-    height: 100vh;
+    font-family: 'Courier Prime', monospace;
     display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centra el juego verticalmente en la pantalla */
-    align-items: center;
-    background-color: #222;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-}
-
-h1 {
-    font-size: 1.2rem; /* Un poco más pequeño para que no robe espacio al canvas */
-    margin: 10px 0;
-    color: #fff;
-}
-
-canvas {
-    background-color: #fff;
-    border: 4px solid #555;
-    margin-top: 20px;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
     
-    /* Nuevas reglas para responsive */
-    width: 95%;            /* Ocupa el ancho del móvil */
-    max-width: 800px;      /* No se estira más de su tamaño real en PC */
-    height: auto;          /* La altura se ajusta sola para no deformarse */
-    display: block;        /* Ayuda al centrado */
-touch-action: none;          /* Evita scroll y zoom al tocar el juego */
-    -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul feo al tocar en iPhone */
-    user-select: none;    /* Evita que el móvil haga scroll al saltar */
+    /* Simulación de madera weathered weathered weathered weathered */
+    background-color: #3e2723; /* Madera oscura */
+    background-image: 
+        linear-gradient(90deg, #3e2723 5px, transparent 5px),
+        linear-gradient(#321909 2px, transparent 2px),
+        radial-gradient(#5d4037 1px, transparent 1px);
+    background-size: 50px 100%, 100% 50px, 40px 40px;
+    background-position: 0 0, 0 0, 15px 15px;
+    filter: saturate(0.85); /* Desaturado suave */
+}
+
+.pared-saloon {
+    width: 100%;
+    max-width: 1000px;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* 2. El Cartel "WANTED": Pergamino envejecido weathered weathered weathered */
+.cartel-wanted {
+    background-color: #dfc19c; /* Papel viejo desaturado */
+    color: #3e2723; /* Texto weathered */
+    width: 100%;
+    max-width: 850px;
+    padding: 30px;
+    
+    /* Bordes quemados e irregulares */
+    border: 5px solid #a38c6d;
+    border-radius: 4px;
+    box-shadow: 
+        10px 10px 0px rgba(0,0,0,0.4), /* Sombra física desaturada */
+        inset 0 0 50px rgba(163, 140, 109, 0.4); /* Desgaste interno desaturado */
+    
+    /* Patrón sutil desaturado de fibra de papel */
+    background-image: radial-gradient(#d4b996 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* 3. Cabecera Grabada desaturado desaturado desaturado desaturado */
+.cabecera-wanted {
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 4px dashed #7b6b4f;
+    padding-bottom: 20px;
+}
+
+.titulo-principal {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #3e2723;
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 8px;
+    text-shadow: 2px 2px 0px #a38c6d; /* Efecto grabado desaturado */
+}
+
+.recompensa {
+    font-size: 1.8rem;
+    color: #e2b04a; /* Oro polvoriento desaturado */
+    margin: 10px 0;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 0px #7b6b4f;
+}
+
+.subtitulo {
+    font-size: 0.9rem;
+    color: #8c7f6b;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+/* 4. El Lienzo del Duelo Duelo Duelo Centrado desaturado */
+.zona-del-duelo {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 1;
+    background-color: #fad7a0; /* Arena weathered desaturada */
+    
+    /* Borde estilo weathered weathered weathered desaturado */
+    border: 8px solid #5d4037; /* Madera weathered */
+    border-radius: 2px;
+    box-shadow: 0 10px 0px #1a1712;
+    
+    display: block;
+    max-width: 800px;
+    touch-action: none;
+}
+
+/* 5. Reglamento con Hover Efecto Hover Efecto Hover Efecto Hover desaturado */
+.reglamento-wanted {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+    width: 100%;
+}
+
+.seccion-texto {
+    background-color: #d4b996; /* Papel weathered desaturado */
+    color: #3e2723;
+    padding: 15px;
+    border: 2px solid #a38c6d;
+    cursor: default;
+    
+    /* Efecto weathered weathered weathered weathered desaturado */
+    transition: all 0.3s ease-out; /* Suave desaturado */
+}
+
+/* Hover Artesanal: El papel se vuelve madera desaturado */
+.seccion-texto:hover {
+    background-color: #3e352a; /* Madera weathered desaturada */
+    color: #dfc19c; /* Papel viejo desaturado */
+    transform: translateY(-5px); /* Se levanta desaturado */
+    border-color: #5d4037;
+    box-shadow: 5px 5px 0 #1a1712;
+}
+
+.seccion-texto h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #3e2723;
+    text-transform: uppercase;
+    border-bottom: 2px solid #7b6b4f;
+    padding-bottom: 5px;
+    transition: all 0.3s ease-out desaturado;
+}
+
+/* Cambio de color del h3 al hover desaturado */
+.seccion-texto:hover h3 {
+    color: #dfc19c;
+}
+
+/* --- PIE DE CARTEL DESATURADO --- */
+.pie-cartel {
+    text-align: center;
+    margin-top: 40px;
+    color: #8c7f6b;
+    font-size: 0.8rem;
+    border-top: 2px dashed #7b6b4f;
+    padding-top: 15px;
 }
