@@ -692,7 +692,10 @@ reiniciarJuegoSinRecargar();
 window.addEventListener("keyup", (e) => {
   if (e.code === "Space") teclaPulsada = false;
 });
-
+// Evitar que se abra el menú del navegador al mantener pulsado (vibración en móvil)
+canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+}, false);
 // Toque / clic en el canvas
 let arrastandoSlider = false;
 

@@ -113,6 +113,15 @@ width: 95%;
     
     display: block;
     max-width: 800px;
+  
+    -webkit-tap-highlight-color: transparent;
+    
+    /* Evita que se seleccione el canvas como si fuera texto o imagen */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    
+    /* Evita menús contextuales al mantener pulsado */
     touch-action: none;
 }
 
