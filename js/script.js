@@ -203,29 +203,120 @@ function actualizarRecord() {
 // =============================================================================
 
 function pintarFondo() {
-  // Cielo arena
-  ctx.fillStyle = COLOR_ARENA;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width;
+  const h = canvas.height;
 
-  // Cactus decorativos (sombras estáticas de fondo)
-  ctx.fillStyle = "rgba(62, 39, 35, 0.15)";
-  ctx.fillRect(150, 260, 15, 100);
-  ctx.fillRect(140, 290, 10, 20);
-  ctx.fillRect(600, 280, 12, 80);
-  ctx.fillRect(612, 300, 10, 15);
+  // ── 1. CIELO con degradado horizonte ─────────────────────────────────────
+  const gradCielo = ctx.createLinearGradient(0, 0, 0, SUELO_Y);
+  gradCielo.addColorStop(0,   "#E8C98A"); // Naranja tostado arriba
+  gradCielo.addColorStop(0.6, "#FAD7A0"); // Arena cálida al centro
+  gradCielo.addColorStop(1,   "#F5C97A"); // Ocre al horizonte
+  ctx.fillStyle = gradCielo;
+  ctx.fillRect(0, 0, w, SUELO_Y);
 
-  // Suelo
-  ctx.fillStyle = COLOR_TINTA;
-  ctx.fillRect(0, SUELO_Y, canvas.width, 40);
+  // ── 2. SOL ────────────────────────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(680, 55, 32, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 200, 80, 0.35)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(680, 55, 22, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 210, 100, 0.55)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(680, 55, 14, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 220, 120, 0.8)";
+  ctx.fill();
 
-  // Líneas de velocidad en el suelo
-  ctx.fillStyle = "rgba(250, 215, 160, 0.2)";
-  const velocidadEfecto = modoDificil ? 12 : 8;
-  const offset = (puntuacion * velocidadEfecto) % 100;
-  for (let i = 0; i < canvas.width + 100; i += 100) {
-    ctx.fillRect(canvas.width - i + offset, 375, 40, 2);
+  // ── 3. MONTAÑAS LEJANAS (capa más lenta, parallax ~5%) ───────────────────
+  const offsetMont = (puntuacion * 0.4) % w;
+  ctx.fillStyle = "rgba(180, 130, 90, 0.25)";
+  for (let rep = 0; rep < 2; rep++) {
+    const ox = -offsetMont + rep * w;
+    // Serie de colinas suaves
+    ctx.beginPath();
+    ctx.moveTo(ox,        SUELO_Y);
+    ctx.lineTo(ox,        230);
+    ctx.lineTo(ox + 80,   180);
+    ctx.lineTo(ox + 160,  230);
+    ctx.lineTo(ox + 220,  200);
+    ctx.lineTo(ox + 310,  160);
+    ctx.lineTo(ox + 400,  210);
+    ctx.lineTo(ox + 480,  175);
+    ctx.lineTo(ox + 560,  220);
+    ctx.lineTo(ox + 640,  190);
+    ctx.lineTo(ox + 720,  240);
+    ctx.lineTo(ox + 800,  SUELO_Y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // ── 4. CACTUS LEJANOS — capa lenta (parallax ~15%) ───────────────────────
+  const offsetL = (puntuacion * 1.2) % w;
+  dibujarCapaCactus(offsetL, 0.18, SUELO_Y, 0.6);
+
+  // ── 5. CACTUS MEDIOS — capa media (parallax ~35%) ────────────────────────
+  const offsetM = (puntuacion * 2.8) % w;
+  dibujarCapaCactus(offsetM, 0.38, SUELO_Y, 0.9);
+
+  // ── 6. SUELO ─────────────────────────────────────────────────────────────
+  // Franja de tierra con degradado
+  const gradSuelo = ctx.createLinearGradient(0, SUELO_Y, 0, h);
+  gradSuelo.addColorStop(0,   "#5D3A1A");
+  gradSuelo.addColorStop(0.3, "#3E2723");
+  gradSuelo.addColorStop(1,   "#2A1A10");
+  ctx.fillStyle = gradSuelo;
+  ctx.fillRect(0, SUELO_Y, w, h - SUELO_Y);
+
+  // Línea de horizonte del suelo
+  ctx.fillStyle = "rgba(100, 60, 20, 0.6)";
+  ctx.fillRect(0, SUELO_Y, w, 3);
+
+  // Líneas de velocidad animadas en el suelo
+  const velocidadEfecto = modoDificil ? 14 : 9;
+  const offsetSuelo = (puntuacion * velocidadEfecto) % 120;
+  ctx.fillStyle = "rgba(250, 215, 160, 0.15)";
+  for (let i = 0; i < w + 120; i += 120) {
+    ctx.fillRect(w - i + offsetSuelo, 372, 55, 2);
+  }
+  // Segunda capa de líneas más tenues y desfasadas
+  ctx.fillStyle = "rgba(250, 215, 160, 0.07)";
+  const offsetSuelo2 = (puntuacion * velocidadEfecto * 0.6) % 80;
+  for (let i = 0; i < w + 80; i += 80) {
+    ctx.fillRect(w - i + offsetSuelo2, 385, 30, 1);
   }
 }
+
+// Dibuja una capa de cactus que se desplaza en bucle con parallax
+// offsetX: desplazamiento actual | escala: tamaño relativo | baseY: pie del cactus | alpha: opacidad
+function dibujarCapaCactus(offsetX, escala, baseY, alpha) {
+  // Posiciones fijas dentro del bucle (se repiten cada 800px)
+  const posiciones = [80, 260, 430, 650, 750];
+
+  ctx.fillStyle = `rgba(62, 39, 35, ${alpha * 0.35})`;
+
+  posiciones.forEach((px) => {
+    for (let rep = 0; rep < 2; rep++) {
+      const x = ((px - offsetX + rep * canvas.width) % canvas.width + canvas.width) % canvas.width;
+      dibujarCactus(x, baseY, escala);
+    }
+  });
+}
+
+// Dibuja un cactus pixel-art centrado en (cx, baseY) con la escala dada
+function dibujarCactus(cx, baseY, escala) {
+  const u = Math.max(2, Math.round(8 * escala)); // unidad de pixel
+
+  // Tronco
+  ctx.fillRect(cx - u,     baseY - u * 8, u * 2, u * 8);
+  // Brazo izquierdo
+  ctx.fillRect(cx - u * 4, baseY - u * 6, u * 3, u);       // horizontal
+  ctx.fillRect(cx - u * 4, baseY - u * 8, u,     u * 2);   // vertical
+  // Brazo derecho
+  ctx.fillRect(cx + u,     baseY - u * 5, u * 3, u);       // horizontal
+  ctx.fillRect(cx + u * 3, baseY - u * 7, u,     u * 2);   // vertical
+}
+
 
 function dibujarVaquero() {
   const { x, y, ancho, alto } = personaje;
@@ -312,34 +403,39 @@ function dibujarMenuPrincipal() {
   ctx.textAlign = "center";
   ctx.fillStyle = COLOR_TINTA;
   ctx.font      = `bold 36px ${FUENTE}`;
-  ctx.fillText("ELIGE TU DESTINO", canvas.width / 2, 50);
+  ctx.fillText("ELIGE TU DESTINO", canvas.width / 2, 45);
 
-  // Botón MODO NORMAL  (y: 70 → 125)
+  // Nombre del jugador
+  ctx.font      = `16px ${FUENTE}`;
+  ctx.fillStyle = "rgba(62, 39, 35, 0.6)";
+  ctx.fillText(`✦ ${nombreJugador.toUpperCase()} ✦`, canvas.width / 2, 70);
+
+  // Botón MODO NORMAL  (y: 90 → 145)
   ctx.lineWidth   = 4;
   ctx.strokeStyle = COLOR_TINTA;
   ctx.fillStyle   = !modoDificil ? COLOR_TINTA : "rgba(62, 39, 35, 0.1)";
-  ctx.strokeRect(200, 70, 400, 55);
-  ctx.fillRect(200, 70, 400, 55);
+  ctx.strokeRect(200, 90, 400, 55);
+  ctx.fillRect(200, 90, 400, 55);
 
   ctx.fillStyle = !modoDificil ? COLOR_ARENA : COLOR_TINTA;
   ctx.font      = `bold 22px ${FUENTE}`;
-  ctx.fillText("MODO NORMAL", canvas.width / 2, 106);
+  ctx.fillText("MODO NORMAL", canvas.width / 2, 126);
 
-  // Botón MODO EXTREMO  (y: 140 → 195)
+  // Botón MODO EXTREMO  (y: 160 → 215)
   ctx.fillStyle = modoDificil ? COLOR_TINTA : "rgba(62, 39, 35, 0.1)";
-  ctx.strokeRect(200, 140, 400, 55);
-  ctx.fillRect(200, 140, 400, 55);
+  ctx.strokeRect(200, 160, 400, 55);
+  ctx.fillRect(200, 160, 400, 55);
 
   ctx.fillStyle = modoDificil ? COLOR_ARENA : COLOR_TINTA;
   ctx.font      = `bold 22px ${FUENTE}`;
-  ctx.fillText("MODO EXTREMO", canvas.width / 2, 176);
+  ctx.fillText("MODO EXTREMO", canvas.width / 2, 196);
 
   ctx.fillStyle = COLOR_TINTA;
-  ctx.font      = `14px ${FUENTE}`;
+  ctx.font      = `16px ${FUENTE}`;
   if (modoSeleccionado) {
-    ctx.fillText("── PULSA ENTER, ESPACIO O CLIC PARA JUGAR ──", canvas.width / 2, 215);
+    ctx.fillText("── PULSA ENTER, ESPACIO O CLIC PARA JUGAR ──", canvas.width / 2, 235);
   } else {
-    ctx.fillText("Haz clic en un modo para seleccionarlo", canvas.width / 2, 215);
+    ctx.fillText("Haz clic en un modo para seleccionarlo", canvas.width / 2, 235);
   }
 
   // Slider de aceleración (solo visible con EXTREMO seleccionado)
@@ -350,7 +446,7 @@ function dibujarMenuPrincipal() {
 
 // Geometría del slider — única fuente de verdad para dibujo y hit-testing
 const SLIDER = {
-  x: 200, y: 265, ancho: 400, alto: 12, btnR: 10,
+  x: 200, y: 280, ancho: 400, alto: 12, btnR: 10,
   min: 1,  max: 50,
   thumbX() {
     return this.x + ((incrementoExtremo - this.min) / (this.max - this.min)) * this.ancho;
@@ -598,8 +694,8 @@ canvas.addEventListener("pointerdown", (e) => {
       }
     }
 
-    const enBotonNormal  = clickX >= 200 && clickX <= 600 && clickY >= 70  && clickY <= 125;
-    const enBotonExtremo = clickX >= 200 && clickX <= 600 && clickY >= 140 && clickY <= 195;
+    const enBotonNormal  = clickX >= 200 && clickX <= 600 && clickY >= 90  && clickY <= 145;
+    const enBotonExtremo = clickX >= 200 && clickX <= 600 && clickY >= 160 && clickY <= 215;
 
     if (enBotonNormal) {
       if (modoSeleccionado && !modoDificil) {
