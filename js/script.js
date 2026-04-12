@@ -1,7 +1,15 @@
 // =============================================================================
 // VAQUERO RUNNER — script.js
 // =============================================================================
-
+const FRASES_DERROTA = [
+  "¡VUELVE A LA SILLA, VAQUERO!",
+  "EL DESIERTO NO PERDONA...",
+  "¡CASI DESENFUNDAS A TIEMPO!",
+  "ESA BALA TENÍA TU NOMBRE...",
+  "NI EL MÁS RÁPIDO VIVE SIEMPRE.",
+  "¡RECARGA Y VUELVE A INTENTARLO!",
+  "HAS MUERTO CON LAS BOTAS PUESTAS."
+];
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
 const API_BASE   = "https://infiniterunner.onrender.com";
@@ -566,7 +574,24 @@ function dibujarRanking() {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
   });
+// --- MENSAJE MOTIVADOR ---
+  // Calculamos la posición justo debajo de la tabla (yTablaStart + cabecera + filas)
+  const yFinalTabla = yTablaStart + 40 + (listaTopScores.slice(0, 5).length * 28);
+  
+  ctx.save();
+  ctx.textAlign = "center";
+  
+  if (puntuacion < (modoDificil ? recordExtremo : recordNormal)) {
 
+    // Si no hay récord, frase aleatoria (basada en la puntuación para que no parpadee)
+    ctx.fillStyle = COLOR_TINTA;
+    ctx.font = "bold 16px 'Courier Prime'";
+    const frase = FRASES_DERROTA[puntuacion % FRASES_DERROTA.length];
+    ctx.fillText(frase, canvas.width / 2, yFinalTabla + 25);
+  }
+  ctx.restore();
+
+  // Aquí vendría tu código del botón de reinicio (el de "CLIC PARA REINTENTAR")
   // Botón de reinicio
   ctx.textAlign = "center";
   ctx.font      = `bold 18px ${FUENTE}`;
