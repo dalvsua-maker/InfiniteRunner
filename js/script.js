@@ -696,6 +696,27 @@ window.addEventListener("keyup", (e) => {
 canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 }, false);
+// Detener por completo la gestión nativa de toques en el canvas
+canvas.addEventListener('touchstart', (e) => {
+    // Solo prevenimos si el juego está en marcha o en el menú
+    // para no bloquear el scroll de la página entera si no es necesario
+    if (e.target === canvas) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    if (e.target === canvas) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Bloqueo extra para gestos de zoom con dos dedos
+canvas.addEventListener('touchmove', (e) => {
+    if (e.target === canvas) {
+        e.preventDefault();
+    }
+}, { passive: false });
 // Toque / clic en el canvas
 let arrastandoSlider = false;
 
