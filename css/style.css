@@ -42,8 +42,8 @@ body {
 .cartel-wanted {
     background-color: #dfc19c; /* Papel viejo desaturado */
     color: #3e2723; /* Texto weathered */
-    width: 100%;
-    max-width: 850px;
+width: 95%; 
+    max-width: 800px;
     padding: 30px;
     
     /* Bordes quemados e irregulares */
@@ -119,8 +119,8 @@ body {
 /* 5. Reglamento con Hover Efecto Hover Efecto Hover Efecto Hover desaturado */
 .reglamento-wanted {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
     margin-top: 30px;
     width: 100%;
 }
@@ -134,6 +134,8 @@ body {
     
     /* Efecto weathered weathered weathered weathered desaturado */
     transition: all 0.3s ease-out; /* Suave desaturado */
+    word-wrap: break-word; 
+    box-sizing: border-box;
 }
 
 /* Hover Artesanal: El papel se vuelve madera desaturado */
@@ -168,4 +170,18 @@ body {
     font-size: 0.8rem;
     border-top: 2px dashed #7b6b4f;
     padding-top: 15px;
+}
+@media (max-width: 480px) {
+    .titulo-principal {
+        font-size: 3rem; /* Wanted un poco más pequeño */
+    }
+    .recompensa {
+        font-size: 1.2rem;
+    }
+    .seccion-texto h3 {
+        font-size: 1.1rem;
+    }
+    .seccion-texto p {
+        font-size: 0.9rem;
+    }
 }
