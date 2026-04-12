@@ -121,15 +121,34 @@ function aplicarFisicas() {
 
 
 // Control del salto
-window.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
+window.addEventListener("keydown", (event) => {
+  // BLOQUEO DE SCROLL: Si pulsas espacio, la página se queda quieta
+  if (event.code === "Space") {
+    event.preventDefault();
+  }
+
+  // LÓGICA DE TECLA PULSADA
+  if (event.code === "Space") {
     teclaPulsada = true;
+
+    // A. Si estamos en el menú: Cambiar modo
+    if (!juegoIniciado) {
+      modoDificil = !modoDificil;
+      return; 
+    }
+
+    // B. Si el juego ha terminado: Reiniciar
+    if (juegoTerminado && puedeReiniciar) {
+      document.location.reload();
+      return;
+    }
+
+    // C. Si estamos jugando: Saltar
     if (personaje.enSuelo) {
       personaje.dy = -personaje.salto;
       personaje.enSuelo = false;
     }
   }
-
 });
 
 window.addEventListener("keyup", (e) => {
@@ -240,108 +259,51 @@ function detectarColision(player, obj) {
 }
 
 function actualizar() {
-  // PANTALLA DE MENÚ
- if (!juegoIniciado) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.textAlign = "center";
-
-    // Botón NORMAL
-    ctx.fillStyle = "#2ed573";
-    ctx.fillRect(200, 120, 400, 60); // Centrado: x=200, ancho=400
-    ctx.fillStyle = "white";
-    ctx.font = "bold 24px Arial";
-    ctx.fillText("MODO NORMAL", canvas.width / 2, 158);
-
-    // Botón EXTREMO
-    ctx.fillStyle = "#ff4757";
-    ctx.fillRect(200, 220, 400, 60);
-    ctx.fillStyle = "white";
-    ctx.fillText("MODO EXTREMO", canvas.width / 2, 258);
-
-    ctx.fillStyle = "#aaa";
-    ctx.font = "16px Arial";
-    ctx.fillText("Haz clic o toca el modo para empezar", canvas.width / 2, 330);
-
-    ctx.textAlign = "left"; // Reset para el resto del juego
-    return;
-}
-if (juegoTerminado) {
-  // Dentro del bloque if (juegoTerminado)
-const tituloModo = modoDificil ? "TOP 5 EXTREMO" : "TOP 5 NORMAL";
-//ctx.fillText(`🏆 ${tituloModo} 🏆`, canvas.width / 2 - 110, 160);
-    // 1. Fondo más oscuro para que resalten las letras
-    ctx.fillStyle = "rgba(0, 0, 0, 0.75)"; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Título principal (Subido un poco más)
-    ctx.fillStyle = "#E74C3C"; // Rojo vibrante
-    ctx.font = "bold 45px Arial";
-    ctx.fillText("¡GAME OVER!", canvas.width / 2 - 140, 100);
-
-    // 3. Ranking Mundial (Dorado y con espacio)
-    ctx.fillStyle = "#F1C40F";
-    ctx.font = "22px Arial";
-    ctx.fillText("🏆 TOP 5 VAQUEROS 🏆", canvas.width / 2 - 110, 160);
-
-    // 4. Lista de puntuaciones (Bajada para que no toque el título)
-    ctx.fillStyle = "white";
-    ctx.font = "18px Courier New"; // Fuente tipo consola queda muy bien
-    listaTopScores.forEach((score, index) => {
-        let yPos = 200 + (index * 30);
-        // Alineación simple: Número. Nombre : Puntos
-        ctx.fillText(`${index + 1}. ${score.nombre.padEnd(12)} : ${score.puntos}`, canvas.width / 2 - 100, yPos);
-    });
-
- // 5. Instrucciones de reinicio (ESTO AHORA SÍ SE ACTUALIZARÁ)
-        ctx.textAlign = "center"; // Te recomiendo centrarlo de verdad
-        ctx.fillStyle = puedeReiniciar ? "#2ecc71" : "#E74C3C"; // Verde si ya puede, rojo si no
-        const textoBoton = puedeReiniciar ? "✅ Toca para volver a intentar" : "⌛ Guardando registro...";
-        ctx.font = "bold 22px Arial";
-        ctx.fillText(textoBoton, canvas.width / 2, 370);
-        ctx.textAlign = "left"; // Reset
-
-        // ¡LA CLAVE! Volvemos a llamar a actualizar para que detecte cuando 'puedeReiniciar' cambie
-        requestAnimationFrame(actualizar); 
-        return; // Salimos de la función
-}
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar pantalla
-
-  // 1. Cielo del desierto (Cambiamos el borrado por un color)
-  ctx.fillStyle = "#FAD7A0"; // Un naranja/arena suave
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 2. Dibujar el Sol (decorativo)
-  ctx.fillStyle = "#F1C40F";
-  ctx.beginPath();
-  ctx.arc(700, 60, 30, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 3. Suelo de arena oscura
-  ctx.fillStyle = "#D35400";
-  ctx.fillRect(0, 360, canvas.width, 40);
-
-  aplicarFisicas();
-  dibujarPersonaje();
-  crearObstaculo();
-  manejarObstaculos();
-  if (juegoTerminado) {
-        let recordActual = modoDificil ? recordExtremo : recordNormal;
-        
-        if (puntuacion > recordActual) {
-            if (modoDificil) recordExtremo = puntuacion;
-            else recordNormal = puntuacion;
-            console.log("¡Nuevo récord personal alcanzado!");
-        }
-        
-       
+    // --- 1. ESTADO: MENÚ ---
+    if (!juegoIniciado) {
+        dibujarMenuPrincipal();
+        return;
     }
-  dibujarPuntuacion();
-  puntuacion++;
-  frameCount++; // Aumentamos el contador de tiempo del juego
-  requestAnimationFrame(actualizar); // Crea el bucle infinito
+
+    // --- 2. ESTADO: GAME OVER ---
+    if (juegoTerminado) {
+        dibujarRanking();
+        requestAnimationFrame(actualizar); 
+        return;
+    }
+
+    // --- 3. ESTADO: JUEGO EN MARCHA ---
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Fondo Estilo Cartel
+    ctx.fillStyle = "#FAD7A0"; 
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Suelo de Tinta
+    ctx.fillStyle = "#3E2723";
+    ctx.fillRect(0, 360, canvas.width, 40);
+
+    // --- LÓGICA DE FÍSICAS (Tu trabajo previo) ---
+    aplicarFisicas();
+    crearObstaculo();
+    manejarObstaculos();
+
+    // --- DIBUJO DE ELEMENTOS (Nuevas funciones estéticas) ---
+    dibujarVaquero();      // Antes era dibujarPersonaje()
+    dibujarBalas();        // Antes estaba dentro de manejarObstaculos o suelto
+
+// 1. LÓGICA DE RÉCORDS (Actualizamos la variable antes de pintar)
+    let recordActual = modoDificil ? recordExtremo : recordNormal;
+    if (puntuacion > recordActual) {
+        if (modoDificil) recordExtremo = puntuacion;
+        else recordNormal = puntuacion;
+    }
+
+    dibujarPuntuacionActual(); // Función para pintar los puntos arriba
+    
+    puntuacion++;
+    frameCount++; 
+    requestAnimationFrame(actualizar);
 }
 // Escuchar la tecla 'R' para reiniciar
 window.addEventListener("keydown", (e) => {
@@ -411,6 +373,121 @@ function iniciarPartida() {
     obtenerMiRecord();
     juegoIniciado = true;
     actualizar();
+}
+// --- NUEVOS MÉTODOS DE ESTÉTICA ---
+
+// === NUEVAS FUNCIONES DE DIBUJO AISLADAS ===
+
+function dibujarMenuPrincipal() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#FAD7A0"; // Fondo Arena
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#3E2723"; // Color Tinta
+    ctx.font = "bold 42px 'Courier Prime', Courier, monospace";
+    ctx.fillText("ELIGE TU DESTINO", canvas.width / 2, 100);
+
+    // Botón MODO NORMAL
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#3E2723";
+    ctx.fillStyle = !modoDificil ? "#3E2723" : "rgba(62, 39, 35, 0.1)";
+    ctx.strokeRect(200, 140, 400, 65);
+    ctx.fillRect(200, 140, 400, 65);
+    
+    ctx.fillStyle = !modoDificil ? "#FAD7A0" : "#3E2723";
+    ctx.font = "bold 24px 'Courier Prime'";
+    ctx.fillText("MODO NORMAL", canvas.width / 2, 182);
+
+    // Botón MODO EXTREMO
+    ctx.fillStyle = modoDificil ? "#3E2723" : "rgba(62, 39, 35, 0.1)";
+    ctx.strokeRect(200, 240, 400, 65);
+    ctx.fillRect(200, 240, 400, 65);
+    
+    ctx.fillStyle = modoDificil ? "#FAD7A0" : "#3E2723";
+    ctx.fillText("MODO EXTREMO", canvas.width / 2, 282);
+
+    ctx.fillStyle = "#3E2723";
+    ctx.font = "16px 'Courier Prime'";
+    ctx.fillText("Haz clic para seleccionar y empezar el duelo", canvas.width / 2, 350);
+}
+
+function dibujarVaquero() {
+    ctx.fillStyle = "#3E2723"; // Color Tinta
+    // Cuerpo
+    ctx.fillRect(personaje.x, personaje.y, personaje.ancho, personaje.alto);
+    // Sombrero (Ala y Copa)
+    ctx.fillRect(personaje.x - 5, personaje.y, personaje.ancho + 10, 7);
+    ctx.fillRect(personaje.x + 10, personaje.y - 12, personaje.ancho - 20, 12);
+}
+
+function dibujarBalas() {
+    ctx.fillStyle = "#3E2723";
+    obstaculos.forEach(obs => {
+        // Cuerpo de la bala
+        ctx.fillRect(obs.x, obs.y, obs.ancho, obs.alto);
+        // Punta redondeada
+        ctx.beginPath();
+        ctx.arc(obs.x, obs.y + obs.alto / 2, obs.alto / 2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function dibujarPuntuacionActual() {
+    ctx.fillStyle = "#3E2723"; // Color Tinta
+    ctx.font = "bold 20px 'Courier Prime', monospace";
+    ctx.textAlign = "left";
+    
+    // Dibujamos la puntuación de la partida
+    ctx.fillText(`PUNTOS: ${puntuacion}`, 20, 40);
+
+    // Dibujamos el récord personal (Máxima)
+    let recordAMostrar = modoDificil ? recordExtremo : recordNormal;
+    ctx.textAlign = "right";
+    ctx.fillText(`MÁXIMA: ${recordAMostrar}`, canvas.width - 20, 40);
+}
+function dibujarRanking() {
+    // 1. Fondo del pergamino
+    ctx.fillStyle = "rgba(250, 215, 160, 0.98)"; 
+    ctx.fillRect(120, 30, 560, 340);
+    ctx.strokeStyle = "#3E2723"; 
+    ctx.lineWidth = 4;
+    ctx.strokeRect(120, 30, 560, 340);
+
+    ctx.fillStyle = "#3E2723";
+    ctx.textAlign = "center";
+    ctx.font = "bold 30px 'Courier Prime', Courier, monospace";
+    ctx.fillText("¡HAS MORDIDO EL POLVO!", canvas.width / 2, 75); // Subido un pelín
+
+    // 2. Cabecera de la tabla
+    ctx.font = "bold 18px 'Courier Prime'";
+    ctx.textAlign = "left"; 
+    ctx.fillText("FORASTERO", 170, 115); // Ajustado
+    ctx.textAlign = "right"; 
+    ctx.fillText("PUNTOS", 630, 115); // Ajustado
+    
+    // Línea divisoria
+    ctx.beginPath();
+    ctx.moveTo(170, 125);
+    ctx.lineTo(630, 125);
+    ctx.stroke();
+
+    // 3. Listado de puntuaciones (Ajustamos yPos para que no se corte el 1)
+    ctx.font = "16px 'Courier Prime'";
+    listaTopScores.slice(0, 5).forEach((score, index) => {
+        // He cambiado 170 por 165 y el multiplicador para dar espacio
+        let yPos = 165 + (index * 38); 
+        ctx.textAlign = "left";
+        ctx.fillText(`${index + 1}. ${score.nombre.toUpperCase()}`, 170, yPos);
+        ctx.textAlign = "right";
+        ctx.fillText(`${score.puntos}`, 630, yPos);
+    });
+
+    // 4. Botón de reinicio
+    ctx.textAlign = "center";
+    let textoBoton = puedeReiniciar ? "CLIC PARA VOLVER A INTENTAR" : "⌛ REGISTRANDO...";
+    ctx.font = "bold 20px 'Courier Prime'";
+    ctx.fillText(textoBoton, canvas.width / 2, 355);
 }
 function obtenerMiRecord() {
     const dificultad = modoDificil ? "Extremo" : "Normal";
