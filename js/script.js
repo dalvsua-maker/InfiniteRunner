@@ -442,6 +442,7 @@ function dibujarMenuPrincipal() {
   if (modoDificil) {
     dibujarSliderExtremo();
   }
+  dibujarBotonMusica();
 }
 
 // Geometría del slider — única fuente de verdad para dibujo y hit-testing
@@ -651,7 +652,7 @@ window.addEventListener("keydown", (e) => {
   // Game over
   if (juegoTerminado) {
     if ((e.code === "Space" || e.code === "KeyR") && puedeReiniciar) {
-      document.location.reload();
+reiniciarJuegoSinRecargar();
     }
     return;
   }
@@ -676,7 +677,26 @@ canvas.addEventListener("pointerdown", (e) => {
   const scaleY = canvas.height / rect.height;
   const clickX = (e.clientX - rect.left) * scaleX;
   const clickY = (e.clientY - rect.top)  * scaleY;
+// --- Detectar clic en el botón de música ---
+// 1. ¿Es clic en el botón de música?
+  const esClicEnMute = (clickX > canvas.width - 60 && clickY < 50);
 
+  // 2. Intentar desbloquear audio (pasando si es el botón de mute o no)
+  verificarYReproducirMusica(esClicEnMute);
+
+  if (esClicEnMute) {
+    musicaEncendida = !musicaEncendida;
+    localStorage.setItem("musicaVaquero", musicaEncendida);
+
+    if (musicaEncendida) {
+      musicaFondo.play();
+    } else {
+      musicaFondo.pause();
+    }
+    
+    if (!juegoIniciado) dibujarMenuPrincipal();
+    return; // Importante: salir aquí para que no ejecute saltos o inicios
+  }
   if (!juegoIniciado) {
     // ── Interacción con el slider (solo si EXTREMO está seleccionado) ──
     if (modoDificil && modoSeleccionado) {
@@ -720,7 +740,7 @@ canvas.addEventListener("pointerdown", (e) => {
   }
 
   if (juegoTerminado) {
-    if (puedeReiniciar) document.location.reload();
+    if (puedeReiniciar) reiniciarJuegoSinRecargar();
     return;
   }
 
@@ -749,9 +769,95 @@ canvas.addEventListener("pointerup", () => {
 window.addEventListener("pointerup", () => {
   teclaPulsada = false;
 });
+// ─── AUDIO ──────────────────────────────────────────────────────────────────
+// Ejemplo con la Opción 1 (Western Outlaw)
+const musicaFondo = new Audio("resources/cancion2.mp3"); // Puedes cambiar este link por tu archivo .mp3
+musicaFondo.loop = true;
+musicaFondo.volume = 0.5;
+// Leemos el valor guardado. Si no existe, por defecto será 'false'
+let musicaEncendida = localStorage.getItem("musicaVaquero") === "true";
 
+function verificarYReproducirMusica(esClicEnMute = false) {
+  // Si el usuario hizo clic específicamente en el botón de mute,
+  // no ejecutamos la autoreproducción para no crear conflicto.
+  if (esClicEnMute) return;
+
+  if (musicaEncendida && musicaFondo.paused) {
+    musicaFondo.play().catch(err => {
+      // Ignoramos el error silenciosamente
+    });
+  }
+}
+
+
+
+function dibujarBotonMusica() {
+  const x = canvas.width - 45; // Posición horizontal
+  const y = 15;                // Posición vertical
+  const size = 30;             // Tamaño del icono
+
+  ctx.save();
+  ctx.translate(x, y);
+  
+  // Estilo de la línea (puedes usar COLOR_TINTA que ya tienes definido)
+  ctx.strokeStyle = COLOR_TINTA;
+  ctx.fillStyle = COLOR_TINTA;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // --- DIBUJAR EL CUERPO DEL ALTAVOZ ---
+  ctx.beginPath();
+  // Parte cuadrada
+  ctx.rect(0, 10, 8, 10);
+  // Parte cono (triángulo trapezoidal)
+  ctx.moveTo(8, 10);
+  ctx.lineTo(18, 2);
+  ctx.lineTo(18, 28);
+  ctx.lineTo(8, 20);
+  ctx.fill();
+  ctx.stroke();
+
+  // --- DIBUJAR LAS ONDAS O LA "X" ---
+  if (musicaEncendida) {
+    // Onda pequeña
+    ctx.beginPath();
+    ctx.arc(15, 15, 8, -Math.PI/3, Math.PI/3);
+    ctx.stroke();
+    // Onda grande
+    ctx.beginPath();
+    ctx.arc(15, 15, 14, -Math.PI/3, Math.PI/3);
+    ctx.stroke();
+  } else {
+    // Una "X" para indicar silencio
+    ctx.beginPath();
+    ctx.moveTo(22, 10);
+    ctx.lineTo(32, 20);
+    ctx.moveTo(32, 10);
+    ctx.lineTo(22, 20);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
 // =============================================================================
 // ARRANQUE
 // =============================================================================
+function reiniciarJuegoSinRecargar() {
+  // Reset de variables de juego
+  juegoIniciado = false;
+  juegoTerminado = false;
+  puntuacion = 0;
+  obstaculos = [];
+  modoSeleccionado = false;
+  puedeReiniciar = false;
+  
+  // El personaje vuelve a su sitio
+  personaje.y = 300;
+  personaje.dy = 0;
+  personaje.enSuelo = false;
 
+  // Dibujamos el menú
+  dibujarMenuPrincipal();
+}
 actualizar();
