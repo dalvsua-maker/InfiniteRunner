@@ -180,6 +180,41 @@ width: 95%;
     border-top: 2px dashed #7b6b4f;
     padding-top: 15px;
 }
+/* Tarjeta de updates a ancho completo */
+.update-log {
+    grid-column: 1 / -1; /* Esto hace que ocupe todas las columnas del grid */
+    margin-top: 10px;
+    text-align: left;
+}
+
+.lista-updates {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.lista-updates li {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    padding-left: 15px;
+    position: relative;
+    border-bottom: 1px dashed #a38c6d;
+    padding-bottom: 5px;
+}
+
+/* Decoración estilo bala o punto de lista */
+.lista-updates li::before {
+    content: "»";
+    position: absolute;
+    left: 0;
+    color: #5d4037;
+    font-weight: bold;
+}
+
+.lista-updates li strong {
+    color: #5d4037;
+    text-decoration: underline;
+}
 @media (max-width: 480px) {
     .titulo-principal {
         font-size: 3rem; /* Wanted un poco más pequeño */

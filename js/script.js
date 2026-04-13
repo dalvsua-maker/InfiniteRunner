@@ -573,7 +573,7 @@ function dibujarTelegrafiarBala() {
   ctx.fillStyle   = "#FF4500";
   ctx.font        = `bold 13px ${FUENTE}`;
   ctx.textAlign   = "right";
-  ctx.fillText("¡ESQUIVA!", canvas.width - 8, 62);
+  ctx.fillText("¡ESQUIVA!", canvas.width - 8, 75);
 
   ctx.restore();
 }
