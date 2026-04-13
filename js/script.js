@@ -24,6 +24,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
 
 // ─── ESTADO GLOBAL ───────────────────────────────────────────────────────────
+let feedbackSaltoBloqueado = 0;
 let saltoDisponibleExtremo = false; // Controla si el vaquero tiene "permiso" para saltar
 let juegoIniciado     = false;
 let juegoTerminado    = false;
@@ -401,9 +402,29 @@ function dibujarCactus(cx, baseY, escala) {
 
 function dibujarVaquero() {
   const { x, y, ancho, alto } = personaje;
+  
+  ctx.save(); // Guardamos el estado del canvas
 
-  // Poncho
-  ctx.fillStyle = "#A17F5B";
+  let offsetX = 0;
+  let colorAlerta = null;
+
+  // Lógica del feedback de bloqueo
+  if (feedbackSaltoBloqueado > 0) {
+    // 1. Generar vibración aleatoria
+    offsetX = (Math.random() - 0.5) * 8; 
+    // 2. Definir color rojo de advertencia
+    colorAlerta = "rgba(255, 0, 0, 0.5)"; 
+    // 3. Restar un frame al contador
+    feedbackSaltoBloqueado--;
+  }
+
+  // Aplicamos la vibración moviendo el contexto
+  ctx.translate(offsetX, 0);
+
+  // --- TU DIBUJO ORIGINAL ---
+
+  // Poncho (Si hay alerta, se tiñe de rojo suave)
+  ctx.fillStyle = colorAlerta || "#A17F5B";
   ctx.fillRect(x, y, ancho, alto);
 
   // Franjas del poncho
@@ -432,8 +453,12 @@ function dibujarVaquero() {
   // Piernas animadas
   ctx.fillStyle = COLOR_TINTA;
   const mov = Math.sin(puntuacion * 0.2) * 8;
-  ctx.fillRect(x + 5,          y + alto, 10, 10 + mov);
+  ctx.fillRect(x + 5,           y + alto, 10, 10 + mov);
   ctx.fillRect(x + ancho - 15, y + alto, 10, 10 - mov);
+
+  // --- FIN DEL DIBUJO ---
+
+  ctx.restore(); // Restauramos el canvas a su posición original
 }
 
 function dibujarBalas() {
@@ -821,25 +846,24 @@ async function iniciarPartida() {
 }
 
 function saltar() {
-  // 1. Verificación básica: solo saltar si está en el suelo
   if (!personaje.enSuelo) return;
 
-  // 2. RESTRICCIÓN MODO EXTREMO
   if (modoDificil) {
-    // Si no hay permiso (no ha aparecido el "!" todavía), bloqueamos el salto
     if (!saltoDisponibleExtremo) {
+      // Si intenta saltar sin permiso, activamos el feedback visual (10 frames)
+      feedbackSaltoBloqueado = 10; 
       return; 
     }
-    // Si había permiso, lo gastamos inmediatamente para que no pueda saltar dos veces
+    // Si tiene permiso, se lo quitamos para que solo pueda usarlo una vez
     saltoDisponibleExtremo = false;
   }
 
-  // 3. LÓGICA DE SALTO (Física)
-  personaje.dy = -personaje.salto;
+  // Lógica de salto normal
+  personaje.dy      = -personaje.salto;
   personaje.enSuelo = false;
-  teclaPulsada = true;
+  teclaPulsada      = true;
 
-  // 4. EFECTOS (Tus partículas de polvo)
+  // Partículas de polvo (tu código original)
   for (let p = 0; p < 5; p++) {
     particulas.push({
       x: personaje.x + personaje.ancho / 2 + (Math.random() - 0.5) * 20,
