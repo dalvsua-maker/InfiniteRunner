@@ -35,7 +35,7 @@ let puntuacion        = 0;
 let obstaculos        = [];
 let listaTopScores    = [];
 let incrementoExtremo = 25; // Configurable en el menú (1–50). Menor = acelera antes = más difícil.
-
+let teclaEspacioPulsada = false; // Nueva variable de control
 // ─── RÉCORDS (se sincronizan con el servidor al iniciar) ─────────────────────
 
 let recordNormal  = parseInt(localStorage.getItem("record_Normal"),  10) || 0;
@@ -703,6 +703,8 @@ reiniciarJuegoSinRecargar();
   // Jugando
   if (e.code === "Space") {
     e.preventDefault();
+    if (teclaPulsada) return;
+    teclaPulsada = true;
     saltar();
   }
 });
