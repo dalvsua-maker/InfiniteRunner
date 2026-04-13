@@ -37,7 +37,20 @@ let obstaculos        = [];
 let listaTopScores    = [];
 let incrementoExtremo = 25; // Configurable en el menú (1–50). Menor = acelera antes = más difícil.
 let teclaEspacioPulsada = false; // Nueva variable de control
+// --- NUEVAS CONSTANTES DE ALTURA ---
+const ALTURA_BAJA = SUELO_Y - 25; 
+const ALTURA_ALTA = SUELO_Y - 85; 
 
+// Patrones: gap es la distancia al anterior, y es la altura
+const PATRONES_NORMAL = [
+  [{ gap: 600, y: ALTURA_BAJA }, { gap: 200, y: ALTURA_BAJA }],
+  [{ gap: 700, y: ALTURA_BAJA }, { gap: 250, y: ALTURA_ALTA }],
+  [{ gap: 600, y: ALTURA_ALTA }, { gap: 600, y: ALTURA_BAJA }],
+  [{ gap: 500, y: ALTURA_BAJA }, { gap: 300, y: ALTURA_BAJA }, { gap: 300, y: ALTURA_BAJA }]
+];
+
+let colaPatron = []; 
+let distanciaUltimaBala = 0;
 // ─── PARTÍCULAS ──────────────────────────────────────────────────────────────
 let particulas = [];
 
@@ -162,41 +175,58 @@ function aplicarFisicas() {
 }
 
 function crearObstaculo() {
-  const incremento      = modoDificil ? incrementoExtremo : 500;
-  const velocidadActual = 5 + Math.floor(puntuacion / incremento);
+  // Calculamos la velocidad según la dificultad elegida
+  const incremento = modoDificil ? incrementoExtremo : 500;
+  const vActual = 5 + Math.floor(puntuacion / incremento);
 
   if (!modoDificil) {
-    // ── NORMAL: Se mantiene igual ──────────────────────────────────────────
-    if (cooldownBala > 0) { cooldownBala--; return; }
+    // --- LÓGICA MODO NORMAL (PATRONES) ---
+    distanciaUltimaBala += vActual; 
 
-    const ultimo   = obstaculos.at(-1);
-    const hayHueco = !ultimo || canvas.width - ultimo.x > 280;
-
-    if (obstaculos.length < 4 && hayHueco && Math.random() < 0.2) {
-      obstaculos.push(crearBala(velocidadActual));
-      cooldownBala = 60; 
+    // Si no hay balas en cola, esperamos un poco y cargamos un patrón nuevo
+    if (colaPatron.length === 0) {
+      if (distanciaUltimaBala > 1200) { // Espacio entre patrones
+        const indice = Math.floor(Math.random() * PATRONES_NORMAL.length);
+        colaPatron = JSON.parse(JSON.stringify(PATRONES_NORMAL[indice])); // Copia profunda
+        distanciaUltimaBala = 0;
+      }
+      return; // Salimos para no ejecutar nada más si no hay balas
     }
+
+    // Si toca lanzar la siguiente bala de la cola
+    if (distanciaUltimaBala >= colaPatron[0].gap) {
+      const infoBala = colaPatron.shift();
+      
+      obstaculos.push({
+        x: canvas.width,
+        y: infoBala.y,
+        ancho: 30,
+        alto: 10,
+        velocidad: vActual,
+        pasada: false
+      });
+      distanciaUltimaBala = 0;
+    }
+
   } else {
-    // ── EXTREMO: Modificado para gestionar el permiso de salto ──────────────
-    
-    // 1. Detectamos el momento exacto en que decidimos lanzar una bala
+    // --- LÓGICA MODO EXTREMO (Se mantiene igual) ---
     if (obstaculos.length === 0 && telegrafiarTimer === 0 && personaje.enSuelo) {
       if (Math.random() < 0.05) {
         telegrafiarTimer = TELEGRAFIAR_FRAMES;
-        
-        // --- NUEVA LÓGICA ---
-        // Justo cuando empieza a "telegrafiar" (aparece el aviso en pantalla),
-        // le damos al jugador el "token" o permiso para saltar una vez.
-        saltoDisponibleExtremo = true; 
+        saltoDisponibleExtremo = true;
       }
     }
-
     if (telegrafiarTimer > 0) {
       telegrafiarTimer--;
       if (telegrafiarTimer === 0 && obstaculos.length === 0) {
-        obstaculos.push(crearBala(velocidadActual));
-        // Aquí podrías poner saltoDisponibleExtremo = false si quieres que 
-        // si no saltó durante el aviso, pierda la oportunidad (muy difícil).
+        obstaculos.push({
+          x: canvas.width,
+          y: ALTURA_BAJA,
+          ancho: 30,
+          alto: 10,
+          velocidad: vActual,
+          pasada: false
+        });
       }
     }
   }
@@ -1143,6 +1173,8 @@ function reiniciarJuegoSinRecargar() {
   mensajeRacha = "";
   mensajeRachaTimer = 0;
   cooldownBala = 0;
+  colaPatron = [];           // <--- AÑADIR ESTA
+  distanciaUltimaBala = 0;
   if (modoDificil) {
     modoSeleccionado = true;
   } else {
