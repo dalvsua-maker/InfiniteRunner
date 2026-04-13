@@ -680,6 +680,58 @@ class Renderer {
     ctx.fillText(puedeReiniciar ? "CLIC PARA REINTENTAR" : "⌛ REGISTRANDO...", this.canvas.width / 2, 375);
   }
 
+  // Pantalla que se muestra inmediatamente al morir, antes de que llegue el ranking
+  dibujarPantallaMuerte(puntuacion, framesMuerte) {
+    const ctx = this.ctx;
+    const w   = this.canvas.width;
+    const h   = this.canvas.height;
+
+    // Fondo rojo desvanecido que aparece y luego se estabiliza
+    const alphaFondo = Math.min(1, framesMuerte / 30);
+    ctx.save();
+    ctx.globalAlpha = alphaFondo * 0.55;
+    ctx.fillStyle   = "#3E1010";
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+
+    // Pergamino central que aparece con fade-in
+    const alphaTexto = Math.min(1, (framesMuerte - 10) / 25);
+    if (alphaTexto <= 0) return;
+
+    ctx.save();
+    ctx.globalAlpha = alphaTexto;
+
+    // Caja pergamino
+    ctx.fillStyle   = "rgba(250, 215, 160, 0.96)";
+    ctx.fillRect(150, 120, w - 300, 165);
+    ctx.strokeStyle = COLOR_TINTA;
+    ctx.lineWidth   = 4;
+    ctx.strokeRect(150, 120, w - 300, 165);
+
+    ctx.fillStyle = COLOR_TINTA;
+    ctx.textAlign = "center";
+
+    // Calavera animada (parpadeo lento)
+    const parpadeo = Math.floor(framesMuerte / 12) % 2 === 0 ? "💀" : "✝";
+    ctx.font = `bold 28px ${FUENTE}`;
+    ctx.fillText(parpadeo, w / 2, 162);
+
+    ctx.font = `bold 22px ${FUENTE}`;
+    ctx.fillText("HAS CAÍDO, FORASTERO", w / 2, 198);
+
+    ctx.font = `18px ${FUENTE}`;
+    ctx.fillStyle = "rgba(62,39,35,0.7)";
+    ctx.fillText(`PUNTUACIÓN: ${puntuacion}`, w / 2, 228);
+
+    // Puntos de carga animados
+    const puntos = ".".repeat((Math.floor(framesMuerte / 15) % 4));
+    ctx.font      = `14px ${FUENTE}`;
+    ctx.fillStyle = "rgba(62,39,35,0.5)";
+    ctx.fillText(`CONSULTANDO EL REGISTRO${puntos}`, w / 2, 266);
+
+    ctx.restore();
+  }
+
   dibujarCargando() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = COLOR_ARENA;
@@ -771,23 +823,28 @@ class GestorObstaculos {
     }
   }
 
-  moverYColisionar(personaje, particulas, onColision, onEsquive, modoDificil) {
-    const MARGEN = 20;
+  moverYColisionar(personaje, particulas, onColision, onEsquive) {
+    // Margen horizontal para dar algo de "justicia" al jugador
+    const MARGEN_X = 20;
+    // Sin margen vertical: las balas altas deben detectarse con precisión total
+    const MARGEN_Y = 2;
 
     for (let i = this.obstaculos.length - 1; i >= 0; i--) {
       const obs       = this.obstaculos[i];
       const xAnterior = obs.x;
       obs.x -= obs.velocidad;
 
+      // Comprobamos tanto la posición anterior como la actual para no
+      // "saltarnos" una bala rápida en un solo frame (tunnel effect)
       const colision =
-        personaje.x + MARGEN < xAnterior + obs.ancho &&
-        personaje.x + personaje.ancho - MARGEN > obs.x &&
-        personaje.y + MARGEN < obs.y + obs.alto &&
-        personaje.y + personaje.alto - MARGEN > obs.y;
+        personaje.x + MARGEN_X < xAnterior + obs.ancho &&
+        personaje.x + personaje.ancho - MARGEN_X > obs.x &&
+        personaje.y + MARGEN_Y < obs.y + obs.alto &&
+        personaje.y + personaje.alto - MARGEN_Y > obs.y;
 
       if (colision) {
         onColision();
-        return;
+        return; // salimos inmediatamente; el estado ya está marcado
       }
 
       if (obs.x < -obs.ancho) {
@@ -1006,6 +1063,7 @@ class Juego {
     this.puntuacion       = 0;
     this.incrementoExtremo = 25;
     this.feedbackSaltoBloqueado = 0;
+    this.framesMuerte     = 0;   // frames desde la muerte, para la animación de transición
     this.listaTopScores   = [];
 
     // ── Récords ────────────────────────────────────────────────────────────
@@ -1083,6 +1141,7 @@ class Juego {
     this.puntuacion       = 0;
     this.puedeReiniciar   = false;
     this.feedbackSaltoBloqueado = 0;
+    this.framesMuerte     = 0;
     this.listaTopScores   = [];
     this.modoSeleccionado = this.modoDificil; // si era difícil, queda seleccionado
 
@@ -1117,11 +1176,24 @@ class Juego {
     }
 
     if (this.juegoTerminado) {
-      this.renderer.dibujarRanking(
-        this.puntuacion, this.modoDificil,
-        this.recordNormal, this.recordExtremo,
-        this.listaTopScores, this.puedeReiniciar
-      );
+      this.framesMuerte++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!this.puedeReiniciar) {
+        // Todavía esperando respuesta del servidor: fondo congelado + pantalla de muerte
+        this.renderer.pintarFondo(this.puntuacion, this.modoDificil);
+        this.personaje.dibujar(this.puntuacion, 0);
+        this.renderer.dibujarBalas(this.obstaculos.obstaculos);
+        this.renderer.dibujarPantallaMuerte(this.puntuacion, this.framesMuerte);
+      } else {
+        // Ya tenemos los datos: mostrar ranking completo
+        this.renderer.dibujarRanking(
+          this.puntuacion, this.modoDificil,
+          this.recordNormal, this.recordExtremo,
+          this.listaTopScores, this.puedeReiniciar
+        );
+      }
+
       requestAnimationFrame(() => this._loop());
       return;
     }
@@ -1158,8 +1230,7 @@ class Juego {
         if (this.modoDificil) {
           this.racha.registrarEsquive();
         }
-      },
-      this.modoDificil
+      }
     );
 
     // Dibujar
