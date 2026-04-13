@@ -88,7 +88,6 @@ async function enviarPuntuacion() {
   } catch (err) {
     console.error("Error al guardar puntuación:", err);
   } finally {
-    // Cargamos el ranking después de guardar (o si falla el guardado)
     await obtenerTopScores();
     puedeReiniciar = true;
   }
@@ -110,10 +109,16 @@ async function obtenerMiRecord() {
   const dificultad = modoDificil ? "Extremo" : "Normal";
 
   try {
-    const res  = await fetch(`${API_BASE}/mi-record?nombre=${nombreJugador}&dificultad=${dificultad}`);
+    // encodeURIComponent convierte "#" en "%23" y cualquier carácter especial
+    const res  = await fetch(`${API_BASE}/mi-record?nombre=${encodeURIComponent(nombreJugador)}&dificultad=${dificultad}`);
     const data = await res.json();
-    if (modoDificil) recordExtremo = data.record;
-    else             recordNormal  = data.record;
+    if (modoDificil) {
+      recordExtremo = data.record;
+      localStorage.setItem("record_Extremo", data.record); // ← guarda para la próxima sesión
+    } else {
+      recordNormal = data.record;
+      localStorage.setItem("record_Normal", data.record);  // ← guarda para la próxima sesión
+    }
   } catch (err) {
     console.error("Error al sincronizar récord:", err);
   }
@@ -633,9 +638,18 @@ function actualizar() {
 // INICIO DE PARTIDA
 // =============================================================================
 
-function iniciarPartida() {
+async function iniciarPartida() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = COLOR_ARENA;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = COLOR_TINTA;
+  ctx.font = `bold 24px ${FUENTE}`;
+  ctx.textAlign = "center";
+  ctx.fillText("CARGANDO RÉCORD...", canvas.width / 2, canvas.height / 2);
+
+  await obtenerMiRecord(); // ← espera la respuesta real del servidor
   obtenerTopScores();
-  obtenerMiRecord();
+
   juegoIniciado = true;
   actualizar();
 }
