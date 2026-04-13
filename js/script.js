@@ -36,6 +36,21 @@ let obstaculos        = [];
 let listaTopScores    = [];
 let incrementoExtremo = 25; // Configurable en el menú (1–50). Menor = acelera antes = más difícil.
 let teclaEspacioPulsada = false; // Nueva variable de control
+
+// ─── PARTÍCULAS ──────────────────────────────────────────────────────────────
+let particulas = [];
+
+// ─── EXTREMO: TELEGRAFIAR BALA ───────────────────────────────────────────────
+let telegrafiarTimer  = 0;   // frames restantes de aviso (0 = sin aviso)
+let TELEGRAFIAR_FRAMES = 80; // cuántos frames dura el aviso visual
+
+// ─── EXTREMO: RACHA DE ESQUIVES ──────────────────────────────────────────────
+let rachaExtremo      = 0;   // balas esquivadas consecutivamente
+let mensajeRacha      = "";  // texto a mostrar
+let mensajeRachaTimer = 0;   // frames restantes del mensaje
+
+// ─── NORMAL: COOLDOWN ENTRE BALAS ────────────────────────────────────────────
+let cooldownBala = 0; // frames hasta que se puede generar otra bala
 // ─── RÉCORDS (se sincronizan con el servidor al iniciar) ─────────────────────
 
 let recordNormal  = parseInt(localStorage.getItem("record_Normal"),  10) || 0;
@@ -150,17 +165,29 @@ function crearObstaculo() {
   const velocidadActual = 5 + Math.floor(puntuacion / incremento);
 
   if (!modoDificil) {
-    // NORMAL: hasta 4 balas separadas 300px entre sí
-    const ultimo = obstaculos.at(-1);
-    const hayHueco = !ultimo || canvas.width - ultimo.x > 300;
+    // ── NORMAL: cooldown garantizado para evitar spam injusto ──────────────
+    if (cooldownBala > 0) { cooldownBala--; return; }
+
+    const ultimo   = obstaculos.at(-1);
+    const hayHueco = !ultimo || canvas.width - ultimo.x > 280;
 
     if (obstaculos.length < 4 && hayHueco && Math.random() < 0.2) {
       obstaculos.push(crearBala(velocidadActual));
+      cooldownBala = 60; // mínimo 60 frames (~1 seg) hasta la siguiente bala
     }
   } else {
-    // EXTREMO: 1 contra 1, solo cuando el vaquero pisa el suelo
-    if (obstaculos.length === 0 && personaje.enSuelo && Math.random() < 0.05) {
-      obstaculos.push(crearBala(velocidadActual));
+    // ── EXTREMO: telegrafía la bala antes de lanzarla ──────────────────────
+    if (obstaculos.length === 0 && telegrafiarTimer === 0 && personaje.enSuelo) {
+      if (Math.random() < 0.05) {
+        telegrafiarTimer = TELEGRAFIAR_FRAMES;
+      }
+    }
+
+    if (telegrafiarTimer > 0) {
+      telegrafiarTimer--;
+      if (telegrafiarTimer === 0 && obstaculos.length === 0) {
+        obstaculos.push(crearBala(velocidadActual));
+      }
     }
   }
 }
@@ -192,12 +219,44 @@ function manejarObstaculos() {
 
     if (colision && !juegoTerminado) {
       juegoTerminado = true;
+      rachaExtremo   = 0; // reset racha al morir
       if (navigator.vibrate) navigator.vibrate(100);
       enviarPuntuacion();
     }
 
-    // Eliminar balas que han salido de pantalla
+    // Bala que sale de pantalla: partículas de near-miss + racha en Extremo
     if (obs.x < -obs.ancho) {
+      // Partículas de polvo dorado al esquivar
+      for (let p = 0; p < 6; p++) {
+        particulas.push({
+          x: 60 + Math.random() * 20,
+          y: obs.y + obs.alto / 2 + (Math.random() - 0.5) * 20,
+          vx: (Math.random() - 0.3) * 3,
+          vy: (Math.random() - 0.5) * 2.5,
+          vida: 35 + Math.random() * 20,
+          vidaMax: 55,
+          radio: 2 + Math.random() * 2,
+          color: Math.random() > 0.5 ? "#FFD700" : "#FAD7A0",
+        });
+      }
+
+      // Racha Extremo
+      if (modoDificil) {
+        rachaExtremo++;
+        const hitos = [5, 10, 20, 30, 50];
+        if (hitos.includes(rachaExtremo)) {
+          const textos = {
+            5:  "¡5 ESQUIVADAS!",
+            10: "¡10 ESQUIVADAS! ¡LEYENDA!",
+            20: "¡20! ¡IMPARABLE!",
+            30: "¡30! ¿ERES HUMANO?",
+            50: "¡50! ¡EL DIABLO NO PUEDE CONTIGO!",
+          };
+          mensajeRacha      = textos[rachaExtremo];
+          mensajeRachaTimer = 120;
+        }
+      }
+
       obstaculos.splice(i, 1);
     }
   }
@@ -396,6 +455,86 @@ function dibujarBalas() {
   });
 }
 
+// ─── SISTEMA DE PARTÍCULAS ────────────────────────────────────────────────────
+function actualizarYDibujarParticulas() {
+  for (let i = particulas.length - 1; i >= 0; i--) {
+    const p = particulas[i];
+    p.x   += p.vx;
+    p.y   += p.vy;
+    p.vy  += 0.12; // gravedad suave
+    p.vida--;
+
+    if (p.vida <= 0) { particulas.splice(i, 1); continue; }
+
+    const alpha = p.vida / p.vidaMax;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle   = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radio * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ─── AVISO VISUAL DE BALA EN EXTREMO (telegrafiar) ───────────────────────────
+function dibujarTelegrafiarBala() {
+  if (!modoDificil || telegrafiarTimer <= 0) return;
+
+  // Pulso en el borde derecho
+  const pulso  = Math.sin((TELEGRAFIAR_FRAMES - telegrafiarTimer) * 0.25) * 0.5 + 0.5;
+  const alpha  = 0.3 + pulso * 0.7;
+  const ancho  = 18 + pulso * 12;
+  const h      = canvas.height;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Franja de aviso en el borde derecho
+  const grad = ctx.createLinearGradient(canvas.width - ancho, 0, canvas.width, 0);
+  grad.addColorStop(0,   "rgba(255, 80, 30, 0)");
+  grad.addColorStop(1,   "rgba(255, 80, 30, 0.9)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(canvas.width - ancho, 0, ancho, h);
+
+  // Icono de bala parpadeante en la zona de impacto
+  ctx.globalAlpha = alpha * 0.9;
+  ctx.fillStyle   = "#FFD700";
+  ctx.font        = `bold ${14 + Math.round(pulso * 6)}px ${FUENTE}`;
+  ctx.textAlign   = "right";
+  ctx.fillText("►", canvas.width - 6, 345);
+
+  // Texto de aviso en la parte superior derecha
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle   = "#FF4500";
+  ctx.font        = `bold 13px ${FUENTE}`;
+  ctx.textAlign   = "right";
+  ctx.fillText("¡ESQUIVA!", canvas.width - 8, 62);
+
+  ctx.restore();
+}
+
+// ─── MENSAJE DE RACHA (Extremo) ───────────────────────────────────────────────
+function dibujarMensajeRacha() {
+  if (mensajeRachaTimer <= 0) return;
+
+  mensajeRachaTimer--;
+  const alpha = Math.min(1, mensajeRachaTimer / 30); // fade out al final
+  const escala = mensajeRachaTimer > 90
+    ? 1 + (mensajeRachaTimer - 90) / 30 * 0.3   // zoom in inicial
+    : 1;
+
+  ctx.save();
+  ctx.globalAlpha  = alpha;
+  ctx.textAlign    = "center";
+  ctx.font         = `bold ${Math.round(22 * escala)}px ${FUENTE}`;
+  ctx.fillStyle    = "#8B4513";
+  ctx.shadowColor  = "rgba(255, 200, 80, 0.8)";
+  ctx.shadowBlur   = 8;
+  ctx.fillText(mensajeRacha, canvas.width / 2, 80);
+  ctx.restore();
+}
+
 function dibujarPuntuacionActual() {
   ctx.fillStyle = COLOR_TINTA;
   ctx.font      = `bold 20px ${FUENTE}`;
@@ -406,6 +545,21 @@ function dibujarPuntuacionActual() {
   const recordAMostrar = modoDificil ? recordExtremo : recordNormal;
   ctx.textAlign = "right";
   ctx.fillText(`MÁXIMA: ${recordAMostrar}`, canvas.width - 20, 40);
+
+  // ── Velocidad actual visible en Extremo ──────────────────────────────────
+  if (modoDificil) {
+    const velActual = 5 + Math.floor(puntuacion / incrementoExtremo);
+    ctx.textAlign = "left";
+    ctx.font      = `14px ${FUENTE}`;
+    ctx.fillStyle = "rgba(62, 39, 35, 0.6)";
+    ctx.fillText(`VEL: ${velActual}`, 20, 58);
+
+    // Racha de esquives
+    if (rachaExtremo > 0) {
+      ctx.textAlign = "right";
+      ctx.fillText(`RACHA: ${rachaExtremo}`, canvas.width - 20, 58);
+    }
+  }
 }
 
 function dibujarMenuPrincipal() {
@@ -627,6 +781,9 @@ function actualizar() {
   manejarObstaculos();
   dibujarVaquero();
   dibujarBalas();
+  actualizarYDibujarParticulas();
+  dibujarTelegrafiarBala();
+  dibujarMensajeRacha();
   actualizarRecord();
   dibujarPuntuacionActual();
 
@@ -659,6 +816,20 @@ function saltar() {
     personaje.dy      = -personaje.salto;
     personaje.enSuelo = false;
     teclaPulsada      = true;
+
+    // Partículas de polvo al despegar
+    for (let p = 0; p < 5; p++) {
+      particulas.push({
+        x: personaje.x + personaje.ancho / 2 + (Math.random() - 0.5) * 20,
+        y: personaje.y + personaje.alto,
+        vx: (Math.random() - 0.5) * 2.5,
+        vy: Math.random() * 1.5 + 0.5,
+        vida: 25 + Math.random() * 15,
+        vidaMax: 40,
+        radio: 1.5 + Math.random() * 1.5,
+        color: Math.random() > 0.5 ? "#C8A870" : "#D4B996",
+      });
+    }
   }
 }
 
@@ -921,6 +1092,12 @@ function reiniciarJuegoSinRecargar() {
   puntuacion = 0;
   obstaculos = [];
   puedeReiniciar = false;
+  particulas = [];
+  telegrafiarTimer = 0;
+  rachaExtremo = 0;
+  mensajeRacha = "";
+  mensajeRachaTimer = 0;
+  cooldownBala = 0;
   if (modoDificil) {
     modoSeleccionado = true;
   } else {
