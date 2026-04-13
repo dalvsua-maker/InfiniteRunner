@@ -24,7 +24,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx    = canvas.getContext("2d");
 
 // ─── ESTADO GLOBAL ───────────────────────────────────────────────────────────
-
+let saltoDisponibleExtremo = false; // Controla si el vaquero tiene "permiso" para saltar
 let juegoIniciado     = false;
 let juegoTerminado    = false;
 let modoDificil       = false;
@@ -165,7 +165,7 @@ function crearObstaculo() {
   const velocidadActual = 5 + Math.floor(puntuacion / incremento);
 
   if (!modoDificil) {
-    // ── NORMAL: cooldown garantizado para evitar spam injusto ──────────────
+    // ── NORMAL: Se mantiene igual ──────────────────────────────────────────
     if (cooldownBala > 0) { cooldownBala--; return; }
 
     const ultimo   = obstaculos.at(-1);
@@ -173,13 +173,20 @@ function crearObstaculo() {
 
     if (obstaculos.length < 4 && hayHueco && Math.random() < 0.2) {
       obstaculos.push(crearBala(velocidadActual));
-      cooldownBala = 60; // mínimo 60 frames (~1 seg) hasta la siguiente bala
+      cooldownBala = 60; 
     }
   } else {
-    // ── EXTREMO: telegrafía la bala antes de lanzarla ──────────────────────
+    // ── EXTREMO: Modificado para gestionar el permiso de salto ──────────────
+    
+    // 1. Detectamos el momento exacto en que decidimos lanzar una bala
     if (obstaculos.length === 0 && telegrafiarTimer === 0 && personaje.enSuelo) {
       if (Math.random() < 0.05) {
         telegrafiarTimer = TELEGRAFIAR_FRAMES;
+        
+        // --- NUEVA LÓGICA ---
+        // Justo cuando empieza a "telegrafiar" (aparece el aviso en pantalla),
+        // le damos al jugador el "token" o permiso para saltar una vez.
+        saltoDisponibleExtremo = true; 
       }
     }
 
@@ -187,6 +194,8 @@ function crearObstaculo() {
       telegrafiarTimer--;
       if (telegrafiarTimer === 0 && obstaculos.length === 0) {
         obstaculos.push(crearBala(velocidadActual));
+        // Aquí podrías poner saltoDisponibleExtremo = false si quieres que 
+        // si no saltó durante el aviso, pierda la oportunidad (muy difícil).
       }
     }
   }
@@ -812,24 +821,36 @@ async function iniciarPartida() {
 }
 
 function saltar() {
-  if (personaje.enSuelo) {
-    personaje.dy      = -personaje.salto;
-    personaje.enSuelo = false;
-    teclaPulsada      = true;
+  // 1. Verificación básica: solo saltar si está en el suelo
+  if (!personaje.enSuelo) return;
 
-    // Partículas de polvo al despegar
-    for (let p = 0; p < 5; p++) {
-      particulas.push({
-        x: personaje.x + personaje.ancho / 2 + (Math.random() - 0.5) * 20,
-        y: personaje.y + personaje.alto,
-        vx: (Math.random() - 0.5) * 2.5,
-        vy: Math.random() * 1.5 + 0.5,
-        vida: 25 + Math.random() * 15,
-        vidaMax: 40,
-        radio: 1.5 + Math.random() * 1.5,
-        color: Math.random() > 0.5 ? "#C8A870" : "#D4B996",
-      });
+  // 2. RESTRICCIÓN MODO EXTREMO
+  if (modoDificil) {
+    // Si no hay permiso (no ha aparecido el "!" todavía), bloqueamos el salto
+    if (!saltoDisponibleExtremo) {
+      return; 
     }
+    // Si había permiso, lo gastamos inmediatamente para que no pueda saltar dos veces
+    saltoDisponibleExtremo = false;
+  }
+
+  // 3. LÓGICA DE SALTO (Física)
+  personaje.dy = -personaje.salto;
+  personaje.enSuelo = false;
+  teclaPulsada = true;
+
+  // 4. EFECTOS (Tus partículas de polvo)
+  for (let p = 0; p < 5; p++) {
+    particulas.push({
+      x: personaje.x + personaje.ancho / 2 + (Math.random() - 0.5) * 20,
+      y: personaje.y + personaje.alto,
+      vx: (Math.random() - 0.5) * 2.5,
+      vy: Math.random() * 1.5 + 0.5,
+      vida: 25 + Math.random() * 15,
+      vidaMax: 40,
+      radio: 1.5 + Math.random() * 1.5,
+      color: Math.random() > 0.5 ? "#C8A870" : "#D4B996",
+    });
   }
 }
 
