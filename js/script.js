@@ -653,6 +653,10 @@ function saltar() {
 // =============================================================================
 
 window.addEventListener("keydown", (e) => {
+  // --- NUEVO: Evitar scroll con espacio ---
+  if (e.code === "Space") {
+    e.preventDefault(); 
+  }
   // Teclas de menú
   if (!juegoIniciado) {
     // 1 y 2: seleccionan el modo directamente (mantiene acceso rápido)
@@ -766,28 +770,29 @@ canvas.addEventListener("pointerdown", (e) => {
     const enBotonNormal  = clickX >= 200 && clickX <= 600 && clickY >= 90  && clickY <= 145;
     const enBotonExtremo = clickX >= 200 && clickX <= 600 && clickY >= 160 && clickY <= 215;
 
-    if (enBotonNormal) {
-      if (modoSeleccionado && !modoDificil) {
-        // 2º clic en el botón ya seleccionado → iniciar
+    // ... dentro de if (!juegoIniciado)
+if (enBotonNormal) {
+    // Si ya estaba seleccionado el Normal, iniciamos. Si no, lo marcamos.
+    if (modoSeleccionado && !modoDificil) {
         iniciarPartida();
-      } else {
+    } else {
         modoDificil = false;
         modoSeleccionado = true;
         dibujarMenuPrincipal();
-      }
-    } else if (enBotonExtremo) {
-      if (modoSeleccionado && modoDificil) {
-        // 2º clic en el botón ya seleccionado → iniciar
+    }
+    return;
+} else if (enBotonExtremo) {
+    // Si ya estaba seleccionado el Extremo, iniciamos. Si no, lo marcamos.
+    if (modoSeleccionado && modoDificil) {
         iniciarPartida();
-      } else {
+    } else {
         modoDificil = true;
         modoSeleccionado = true;
         dibujarMenuPrincipal();
-      }
     }
     return;
+}
   }
-
   if (juegoTerminado) {
     if (puedeReiniciar) reiniciarJuegoSinRecargar();
     return;
@@ -818,6 +823,7 @@ canvas.addEventListener("pointerup", () => {
 window.addEventListener("pointerup", () => {
   teclaPulsada = false;
 });
+
 // ─── AUDIO ──────────────────────────────────────────────────────────────────
 // Ejemplo con la Opción 1 (Western Outlaw)
 const musicaFondo = new Audio("resources/cancion2.mp3"); // Puedes cambiar este link por tu archivo .mp3
@@ -898,8 +904,12 @@ function reiniciarJuegoSinRecargar() {
   juegoTerminado = false;
   puntuacion = 0;
   obstaculos = [];
-  modoSeleccionado = false;
   puedeReiniciar = false;
+  if (modoDificil) {
+    modoSeleccionado = true;
+  } else {
+    modoSeleccionado = false;
+  }
   
   // El personaje vuelve a su sitio
   personaje.y = 300;
