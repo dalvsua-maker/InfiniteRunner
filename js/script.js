@@ -871,7 +871,7 @@ class Renderer {
     const margin = this.canvas.width * 0.05;
     const tablaAncho = this.canvas.width * 0.9;
     const tablaX = margin;
-
+    puntuacion=puntuacion-1;
     ctx.fillStyle = "rgba(250, 215, 160, 0.98)";
     ctx.fillRect(tablaX, 10, tablaAncho, 380);
     ctx.strokeStyle = COLOR_TINTA;
@@ -967,7 +967,7 @@ class Renderer {
     const ctx = this.ctx;
     const w = this.canvas.width;
     const h = this.canvas.height;
-
+    puntuacion=puntuacion-1;
     const alphaFondo = Math.min(1, framesMuerte / 30);
     ctx.save();
     ctx.globalAlpha = alphaFondo * 0.55;
