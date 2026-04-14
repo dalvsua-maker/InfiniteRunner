@@ -29,14 +29,14 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if (err) {
-        console.error("❌ Error conectando a Railway: " + err.message);
+        console.error(" Error conectando a Railway: " + err.message);
         return;
     }
-    console.log("✅ Servidor conectado a la base de datos en la NUBE (Railway)");
+    console.log(" Servidor conectado a la base de datos en la NUBE (Railway)");
 });
 
 app.get('/', (req, res) => {
-    res.send("Servidor del Vaquero funcionando ✅");
+    res.send("Servidor del Vaquero funcionando ");
 });
 
 // Ruta para guardar puntuación

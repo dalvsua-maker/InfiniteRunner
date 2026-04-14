@@ -215,6 +215,23 @@ width: 95%;
     color: #5d4037;
     text-decoration: underline;
 }
+#footerlink:link{
+
+color:#7b6b4f;
+
+
+}
+#footerlink:visited{
+
+color:#1a1712;
+
+
+}
+#footerlink:hover {
+    opacity: 0.7;             /* Se vuelve un poco más transparente (70%) */
+    transform: scale(1.1);    /* Crece un 10% */
+}
+
 @media (max-width: 480px) {
     .titulo-principal {
         font-size: 3rem; /* Wanted un poco más pequeño */

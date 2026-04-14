@@ -638,7 +638,8 @@ class Renderer {
     if (!modoDificil || telegrafiarTimer <= 0) return;
 
     const pulso =
-      Math.sin((TELEGRAFIAR_FRAMES - telegrafiarTimer) * 0.25) * 0.5 + 0.5;
+      Math.sin((TELEGRAFIAR_FRAMES - telegrafiarTimer) * 0.25) * 0.25 + 0.5;
+   
     const alpha = 0.3 + pulso * 0.7;
     const ancho = 18 + pulso * 12;
     const h = this.canvas.height;
@@ -654,7 +655,7 @@ class Renderer {
       0,
     );
     grad.addColorStop(0, "rgba(255, 80, 30, 0)");
-    grad.addColorStop(1, "rgba(255, 80, 30, 0.9)");
+    grad.addColorStop(1, "rgba(255, 57, 2, 0.9)");
     ctx.fillStyle = grad;
     ctx.fillRect(this.canvas.width - ancho, 0, ancho, h);
 
@@ -671,6 +672,7 @@ class Renderer {
     ctx.fillText("¡ESQUIVA!", this.canvas.width - 8, 75);
 
     ctx.restore();
+    
   }
 
   /**
@@ -1119,7 +1121,7 @@ class GestorObstaculos {
       this.telegrafiarTimer === 0 &&
       personaje.enSuelo
     ) {
-      if (Math.random() < 0.05) {
+      if (Math.random() < 0.15) {
         this.telegrafiarTimer = this.TELEGRAFIAR_FRAMES;
         this.saltoDisponibleExtremo = true; // Activa permiso visual
       }
