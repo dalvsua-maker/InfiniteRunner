@@ -457,7 +457,7 @@ class Renderer {
     /** @type {Object} Configuración geométrica del Slider (Modo Extremo). */
     this.SLIDER = {
       x: 200,
-      y: 280,
+      y: 290,
       ancho: 400,
       alto: 12,
       btnR: 10,
@@ -793,13 +793,13 @@ class Renderer {
     ctx.fillText("MODO EXTREMO", this.canvas.width / 2, 196);
 
     ctx.fillStyle = COLOR_TINTA;
-    ctx.font = `16px ${FUENTE}`;
+    ctx.font = `18px ${FUENTE}`;
     ctx.fillText(
       modoSeleccionado
         ? "── PULSA ENTER, ESPACIO O CLIC PARA JUGAR ──"
         : "Haz clic en un modo para seleccionarlo",
       this.canvas.width / 2,
-      235,
+      240,
     );
 
     if (modoDificil) this.dibujarSliderExtremo(incrementoExtremo);
@@ -817,28 +817,28 @@ class Renderer {
 
     ctx.textAlign = "center";
     ctx.fillStyle = COLOR_TINTA;
-    ctx.font = `bold 13px ${FUENTE}`;
+    ctx.font = `bold 16px ${FUENTE}`;
     ctx.fillText(
       "VELOCIDAD DE ACELERACIÓN — MODO EXTREMO",
       this.canvas.width / 2,
-      y - 18,
+      y - 20,
     );
 
-    ctx.font = `11px ${FUENTE}`;
+    ctx.font = ` bold 13px ${FUENTE}`;
     ctx.textAlign = "left";
-    ctx.fillText("MÁS RÁPIDO", x, y - 5);
+    ctx.fillText("MÁS RÁPIDO", x, y - 2);
     ctx.textAlign = "right";
-    ctx.fillText("MÁS LENTO", x + ancho, y - 5);
+    ctx.fillText("MÁS LENTO", x + ancho, y - 2);
 
     // Track
     ctx.fillStyle = COLOR_TINTA;
-    ctx.fillRect(x, y, tx - x, alto);
-    ctx.fillStyle = "rgba(62,39,35,0.2)";
-    ctx.fillRect(tx, y, x + ancho - tx, alto);
+    ctx.fillRect(x, y+5, tx - x, alto);
+    ctx.fillStyle = "rgba(3, 2, 2, 0.2)";
+    ctx.fillRect(tx, y+5, x + ancho - tx, alto);
 
     // Thumb (cursor)
     ctx.beginPath();
-    ctx.arc(tx, y + alto / 2, btnR, 0, Math.PI * 2);
+    ctx.arc(tx, y + 20 / 2, btnR, 0, Math.PI * 2);
     ctx.fillStyle = COLOR_TINTA;
     ctx.fill();
     ctx.strokeStyle = COLOR_ARENA;
