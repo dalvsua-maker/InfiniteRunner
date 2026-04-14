@@ -799,7 +799,7 @@ class Renderer {
         ? "── PULSA ENTER, ESPACIO O CLIC PARA JUGAR ──"
         : "Haz clic en un modo para seleccionarlo",
       this.canvas.width / 2,
-      240,
+      245,
     );
 
     if (modoDificil) this.dibujarSliderExtremo(incrementoExtremo);
