@@ -793,7 +793,7 @@ class Renderer {
     ctx.fillText("MODO EXTREMO", this.canvas.width / 2, 196);
 
     ctx.fillStyle = COLOR_TINTA;
-    ctx.font = `18px ${FUENTE}`;
+    ctx.font = `bolder 18px ${FUENTE}`;
     ctx.fillText(
       modoSeleccionado
         ? "── PULSA ENTER, ESPACIO O CLIC PARA JUGAR ──"
