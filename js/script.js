@@ -1045,7 +1045,7 @@ class GestorObstaculos {
     this.colaPatron = [];
     this.distanciaUltima = 0;
     this.telegrafiarTimer = 0;
-    this.TELEGRAFIAR_FRAMES = 80;
+    this.framesAvisoActual = 80; // Tiempo dinámico que durará la alerta actual
     this.saltoDisponibleExtremo = false;
   }
 
@@ -1110,7 +1110,7 @@ class GestorObstaculos {
   }
 
   /**
-   * Lógica interna: Modo extremo genera una bala al azar previo "telegrafiado".
+   * Lógica interna: Modo extremo genera una bala con parpadeo aleatorio.
    * @param {number} vActual - Velocidad del proyectil.
    * @param {Personaje} personaje - El jugador.
    * @private
@@ -1121,8 +1121,13 @@ class GestorObstaculos {
       this.telegrafiarTimer === 0 &&
       personaje.enSuelo
     ) {
-      if (Math.random() < 0.15) {
-        this.telegrafiarTimer = this.TELEGRAFIAR_FRAMES;
+      if (Math.random() < 0.05) {
+        // Generar un número de parpadeos aleatorio entre 1 y 5
+        // (1 parpadeo = ~25 frames matemáticos)
+        const numParpadeos = Math.floor(Math.random() * 5) + 1;
+        this.framesAvisoActual = numParpadeos * 25;
+        
+        this.telegrafiarTimer = this.framesAvisoActual;
         this.saltoDisponibleExtremo = true; // Activa permiso visual
       }
     }
@@ -1150,15 +1155,14 @@ class GestorObstaculos {
    * @param {Function} onEsquive - Callback a invocar en caso de esquive perfecto.
    */
   moverYColisionar(personaje, particulas, onColision, onEsquive) {
-    const MARGEN_X = 20; // Permisividad horizontal
-    const MARGEN_Y = 2;  // Permisividad vertical para "balas altas"
+    const MARGEN_X = 20; 
+    const MARGEN_Y = 2;  
 
     for (let i = this.obstaculos.length - 1; i >= 0; i--) {
       const obs = this.obstaculos[i];
       const xAnterior = obs.x;
       obs.x -= obs.velocidad;
 
-      // Colisión (Considera tunnel-effect en frames altos evaluando X anterior)
       const colision =
         personaje.x + MARGEN_X < xAnterior + obs.ancho &&
         personaje.x + personaje.ancho - MARGEN_X > obs.x &&
@@ -1170,7 +1174,6 @@ class GestorObstaculos {
         return; 
       }
 
-      // Proyectil sale de pantalla (Esquive logrado)
       if (obs.x < -obs.ancho) {
         particulas.emitirEsquive(obs.x, obs.y, obs.alto);
         onEsquive();
@@ -1628,7 +1631,11 @@ class Juego {
     this.personaje.dibujar(this.puntuacion, this.feedbackSaltoBloqueado);
     this.renderer.dibujarBalas(this.obstaculos.obstaculos);
     this.particulas.actualizarYDibujar();
-    this.renderer.dibujarTelegrafiarBala(this.modoDificil, this.obstaculos.telegrafiarTimer, this.obstaculos.TELEGRAFIAR_FRAMES);
+   this.renderer.dibujarTelegrafiarBala(
+      this.modoDificil, 
+      this.obstaculos.telegrafiarTimer, 
+      this.obstaculos.framesAvisoActual // <--- El nuevo valor dinámico
+    );
 
     this.racha.tickTimer();
     this.renderer.dibujarMensajeRacha(this.racha.mensaje, this.racha.timer);
