@@ -95,21 +95,6 @@ app.get('/top-scores', (req, res) => {
         res.json(results);
     });
 });
-// Ruta para obtener TODOS los forasteros y su récord máximo
-app.get("/todos-los-records", (req, res) => {
-  const query = `
-        SELECT u.nombre, MAX(s.puntos) as record 
-        FROM usuarios u 
-        JOIN scores s ON u.id = s.usuario_id 
-        GROUP BY u.id, u.nombre 
-        ORDER BY record DESC
-    `;
-
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
 
