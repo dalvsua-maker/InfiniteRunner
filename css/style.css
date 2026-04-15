@@ -45,7 +45,8 @@ body {
 width: 95%; 
     max-width: 800px;
     padding: 30px;
-    
+    margin: 0 auto; /* Refuerza el centrado */
+    z-index: 5;
     /* Bordes quemados e irregulares */
     border: 5px solid #a38c6d;
     border-radius: 4px;
@@ -192,5 +193,222 @@ width: 95%;
     }
     .seccion-texto p {
         font-size: 0.9rem;
+    }
+}
+/* ==========================================================================
+   AVISO DE ORIENTACIÓN (MÓVILES EN VERTICAL) — ACTUALIZADO CON SVGs
+   ========================================================================== */
+.aviso-orientacion {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #2b1b17; /* Fondo oscuro Saloon */
+    z-index: 9999;
+    color: #dfc19c;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.aviso-orientacion .mensaje-aviso {
+    border: 4px solid #a38c6d;
+    background-color: #3e2723;
+    padding: 25px;
+    max-width: 85%;
+    box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    font-family: 'Courier Prime', monospace;
+}
+
+.aviso-orientacion h2 {
+    margin-top: 0;
+   
+    font-weight: bold;
+}
+
+.icono-girar-svg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* Estilo común para todos los SVGs */
+.icono-girar-svg svg {
+    fill: #dfc19c; /* Color del papel */
+    height: 50px;
+}
+
+/* Animación de las flechas y los teléfonos */
+.phone-v {
+    opacity: 1;
+    animation: fadeV 2s infinite ease-in-out;
+}
+
+.arrows-svg {
+    transform-origin: center;
+    animation: girarArrows 2s infinite ease-in-out;
+}
+
+.phone-h {
+    opacity: 0;
+    animation: fadeH 2s infinite ease-in-out;
+}
+
+@keyframes fadeV { 0%, 30% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes fadeH { 0%, 50% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@keyframes girarArrows { 0% { transform: rotate(0deg); } 100% { transform: rotate(-180deg); } }
+
+/* ==========================================================================
+   LÓGICA DE DETECCIÓN Y REDISPOSICIÓN VISUAL (MEDIA QUERIES)
+   ========================================================================== */
+
+/* 1. MÓVIL EN VERTICAL: Bloquear y ocultar todo */
+@media screen and (orientation: portrait) and (max-width: 900px) {
+    .aviso-orientacion {
+        display: flex; /* Mostramos la alerta western */
+    }
+    .pared-saloon {
+        display: none; /* Ocultamos todo el wanted poster */
+    }
+}
+
+/* 2. MÓVIL EN HORIZONTAL: Adaptar el canvas sin ocultar el resto del cartel */
+@media screen and (orientation: landscape) and (max-width: 900px) {
+    /* El cartel ocupa todo el ancho disponible para aprovechar espacio */
+    .cartel-wanted {
+        width: 100%;
+        margin: 0;
+        padding: 10px;
+        border: 5px solid #bcaaa4; /* Borde ligeramente más fino en móvil */
+    }
+
+    .zona-del-duelo {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* Hacemos que el canvas sea "responsive" para que no se salga de la pantalla */
+    #gameCanvas {
+        max-width: 100%;
+        height: auto; /* Mantiene la proporción original de 800x400 */
+        box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+}
+/* ==========================================================================
+   PANEL LATERAL: REGISTRO DE FORASTEROS
+   ========================================================================== */
+.pared-saloon {
+    display: flex;
+    justify-content: center; /* Mantiene el cartel WANTED en el centro */
+    align-items: flex-start;
+    padding: 30px;
+    width: 100%;
+    min-height: 100vh;
+    position: relative; /* Necesario para posicionar el panel respecto a la pared */
+}
+
+.panel-forasteros {
+    /* Posicionamiento absoluto para que no empuje al cartel central */
+    position: absolute;
+    left: 20px;
+    top: 30px;
+    
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #4a3325;
+    padding: 15px;
+    border: 5px solid #2b1b17;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 5px 5px 15px rgba(0,0,0,0.6);
+    z-index: 10;
+}
+
+.cabecera-panel {
+    text-align: center;
+    color: #dfc19c;
+    border-bottom: 2px dashed #a38c6d;
+    padding-bottom: 10px;
+}
+
+.cabecera-panel h2 {
+    font-size: 1.2rem;
+    margin: 0;
+    color: #ff5722;
+}
+
+.cabecera-panel p {
+    font-size: 0.8rem;
+    margin: 5px 0 0 0;
+}
+
+/* El mini-cartel de Se Busca */
+.mini-cartel {
+    background-color: #dfc19c;
+    border: 3px solid #bcaaa4;
+    padding: 10px;
+    text-align: center;
+    color: #3e2723;
+    position: relative;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    margin-bottom: 10px;
+}
+
+.mini-cartel h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.mini-cartel .mini-puntos {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #8b0000;
+    margin: 0;
+}
+
+.mini-cartel .mini-sello {
+    font-size: 0.7rem;
+    margin: 5px 0 0 0;
+    opacity: 0.7;
+}
+
+/* Controles de Paginación */
+.controles-paginacion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #dfc19c;
+    margin-top: 10px;
+}
+
+.btn-pag {
+    background-color: #dfc19c;
+    border: 2px solid #2b1b17;
+    color: #3e2723;
+    font-family: 'Courier Prime', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px 15px;
+}
+
+.btn-pag:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsividad: Si la pantalla es estrecha, ocultamos el panel para no tapar el juego */
+@media screen and (max-width: 1300px) {
+    .panel-forasteros {
+        /* En pantallas medianas lo movemos a una posición fija o lo ocultamos */
+        display: none; 
     }
 }

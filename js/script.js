@@ -1640,6 +1640,81 @@ class Juego {
 }
 
 // =============================================================================
+// TABLÓN LATERAL DE FORASTEROS (Paginación)
+// =============================================================================
+const panelForasteros = {
+    datos: [],
+    paginaActual: 1,
+    itemsPorPagina: 4, // Cuántos mini-carteles se ven a la vez
+
+    iniciar: async function() {
+        try {
+            const respuesta = await fetch(`${API_BASE}/todos-los-records`);
+            if (respuesta.ok) {
+                this.datos = await respuesta.json();
+                this.renderizarPagina();
+                this.configurarBotones();
+            }
+        } catch (error) {
+            console.error("Error al cargar forasteros:", error);
+        }
+    },
+
+    renderizarPagina: function() {
+        const contenedor = document.getElementById("lista-mini-carteles");
+        const textoPag = document.getElementById("texto-paginacion");
+        contenedor.innerHTML = ""; // Limpiar panel
+
+        if (this.datos.length === 0) return;
+
+        const totalPaginas = Math.ceil(this.datos.length / this.itemsPorPagina);
+        
+        // Calcular qué porción del array mostrar
+        const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+        const fin = inicio + this.itemsPorPagina;
+        const forasterosPagina = this.datos.slice(inicio, fin);
+
+        // Crear los mini-carteles
+        forasterosPagina.forEach(forastero => {
+            const div = document.createElement("div");
+            div.className = "mini-cartel";
+            div.innerHTML = `
+                <h4>${forastero.nombre}</h4>
+                <p class="mini-puntos">${forastero.record}</p>
+                <p class="mini-sello">PUNTOS DE RECOMPENSA</p>
+            `;
+            contenedor.appendChild(div);
+        });
+
+        // Actualizar UI de paginación
+        textoPag.innerText = `${this.paginaActual} / ${totalPaginas}`;
+        document.getElementById("btn-prev-page").disabled = this.paginaActual === 1;
+        document.getElementById("btn-next-page").disabled = this.paginaActual === totalPaginas;
+    },
+
+    configurarBotones: function() {
+        document.getElementById("btn-prev-page").addEventListener("click", () => {
+            if (this.paginaActual > 1) {
+                this.paginaActual--;
+                this.renderizarPagina();
+            }
+        });
+
+        document.getElementById("btn-next-page").addEventListener("click", () => {
+            const totalPaginas = Math.ceil(this.datos.length / this.itemsPorPagina);
+            if (this.paginaActual < totalPaginas) {
+                this.paginaActual++;
+                this.renderizarPagina();
+            }
+        });
+    }
+};
+
+// Arrancar el panel cuando la ventana termine de cargar
+window.addEventListener('load', () => {
+    panelForasteros.iniciar();
+});
+// =============================================================================
 // ARRANQUE
 // =============================================================================
 const juego = new Juego();
