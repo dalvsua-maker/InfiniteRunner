@@ -43,85 +43,28 @@ const ALTURA_ALTA = SUELO_Y - 85;
 
 /**
  * Definición de secuencias rítmicas de balas para el Modo Normal.
- * Organizadas en 3 niveles: FACIL (primeros 1000pts), MEDIO (1000-3000), DIFICIL (3000+).
  * Cada patrón contiene objetos con la distancia (gap) a la bala anterior y su altura (y).
- * Los gaps están calculados para ser justos a la velocidad base (v=5): 
- *   - gap 600+ = tiempo cómodo para reaccionar y saltar
- *   - gap 400  = timing normal, sin prisa
- *   - gap 280  = ajustado, requiere atención
- * @constant {{FACIL: Array, MEDIO: Array, DIFICIL: Array}}
+ * @constant {Array<Array<{gap: number, y: number}>>}
  */
-const PATRONES_NORMAL = {
-  FACIL: [
-    // Una sola bala baja — el patrón de bienvenida
-    [
-      { gap: 700, y: ALTURA_BAJA },
-    ],
-    // Dos bajas con respiración larga entre ellas
-    [
-      { gap: 650, y: ALTURA_BAJA },
-      { gap: 500, y: ALTURA_BAJA },
-    ],
-    // Una baja seguida de una alta — introduce la bala aérea con tiempo
-    [
-      { gap: 700, y: ALTURA_BAJA },
-      { gap: 600, y: ALTURA_ALTA },
-    ],
-    // Solo una bala alta — para que el jugador aprenda el timing del salto alto
-    [
-      { gap: 700, y: ALTURA_ALTA },
-    ],
+const PATRONES_NORMAL = [
+  [
+    { gap: 600, y: ALTURA_BAJA },
+    { gap: 200, y: ALTURA_BAJA },
   ],
-  MEDIO: [
-    // Doble baja rítmica — como un metrónomo
-    [
-      { gap: 600, y: ALTURA_BAJA },
-      { gap: 400, y: ALTURA_BAJA },
-    ],
-    // Zigzag: alta luego baja con gap ajustado — exige dos saltos bien temporizados
-    [
-      { gap: 600, y: ALTURA_ALTA },
-      { gap: 450, y: ALTURA_BAJA },
-    ],
-    // Baja + alta rápida — la segunda llega cuando aún se está procesando la primera
-    [
-      { gap: 650, y: ALTURA_BAJA },
-      { gap: 350, y: ALTURA_ALTA },
-    ],
-    // Triple baja en escalera — el ritmo va acelerando
-    [
-      { gap: 600, y: ALTURA_BAJA },
-      { gap: 420, y: ALTURA_BAJA },
-      { gap: 420, y: ALTURA_BAJA },
-    ],
+  [
+    { gap: 700, y: ALTURA_BAJA },
+    { gap: 250, y: ALTURA_ALTA },
   ],
-  DIFICIL: [
-    // Doble rápida + una alta — la alta llega cuando el jugador baja del segundo salto
-    [
-      { gap: 600, y: ALTURA_BAJA },
-      { gap: 300, y: ALTURA_BAJA },
-      { gap: 500, y: ALTURA_ALTA },
-    ],
-    // Zigzag invertido ajustado — alta-baja con poco margen
-    [
-      { gap: 600, y: ALTURA_ALTA },
-      { gap: 320, y: ALTURA_BAJA },
-    ],
-    // Tren de tres: dos bajas rápidas y una alta de cierre
-    [
-      { gap: 600, y: ALTURA_BAJA },
-      { gap: 300, y: ALTURA_BAJA },
-      { gap: 350, y: ALTURA_ALTA },
-    ],
-    // Cuatro bajas con ritmo sincopado — el gap 280 es el más ajustado del juego
-    [
-      { gap: 650, y: ALTURA_BAJA },
-      { gap: 400, y: ALTURA_BAJA },
-      { gap: 280, y: ALTURA_BAJA },
-      { gap: 450, y: ALTURA_ALTA },
-    ],
+  [
+    { gap: 600, y: ALTURA_ALTA },
+    { gap: 600, y: ALTURA_BAJA },
   ],
-};
+  [
+    { gap: 500, y: ALTURA_BAJA },
+    { gap: 300, y: ALTURA_BAJA },
+    { gap: 300, y: ALTURA_BAJA },
+  ],
+];
 
 // ─── CANVAS ──────────────────────────────────────────────────────────────────
 /** @type {HTMLCanvasElement} Elemento canvas del DOM. */
@@ -1104,7 +1047,6 @@ class GestorObstaculos {
     this.telegrafiarTimer = 0;
     this.framesAvisoActual = 80; // Tiempo dinámico que durará la alerta actual
     this.saltoDisponibleExtremo = false;
-    this.ultimoIndicePatron = -1; // Anti-repetición: guarda el índice del último patrón usado
   }
 
   /**
@@ -1116,7 +1058,6 @@ class GestorObstaculos {
     this.distanciaUltima = 0;
     this.telegrafiarTimer = 0;
     this.saltoDisponibleExtremo = false;
-    this.ultimoIndicePatron = -1;
   }
 
   /**
@@ -1131,50 +1072,24 @@ class GestorObstaculos {
     const vActual = 5 + Math.floor(puntuacion / incremento);
 
     if (!modoDificil) {
-      this._actualizarNormal(vActual, puntuacion);
+      this._actualizarNormal(vActual);
     } else {
       this._actualizarExtremo(vActual, personaje);
     }
   }
 
   /**
-   * Lógica interna: Modo normal usa `PATRONES_NORMAL` organizados por dificultad progresiva.
-   * - Hasta 1000 pts: solo patrones FACIL
-   * - 1000-3000 pts: patrones FACIL y MEDIO
-   * - 3000+ pts: todos los tiers disponibles
-   * Garantiza que nunca se repita el mismo patrón dos veces seguidas.
+   * Lógica interna: Modo normal usa el diccionario `PATRONES_NORMAL` como oleadas de balas.
    * @param {number} vActual - Velocidad con la que se empuja la bala.
-   * @param {number} puntuacion - Puntuación actual para seleccionar el tier correcto.
    * @private
    */
-  _actualizarNormal(vActual, puntuacion) {
+  _actualizarNormal(vActual) {
     this.distanciaUltima += vActual;
 
     if (this.colaPatron.length === 0) {
-      // Gap entre oleadas variable: entre 900 y 1500 unidades según puntuación
-      const gapMinimo = puntuacion > 2000 ? 800 : 900;
-      const gapMaximo = puntuacion > 2000 ? 1300 : 1500;
-      const gapObjetivo = gapMinimo + Math.random() * (gapMaximo - gapMinimo);
-
-      if (this.distanciaUltima > gapObjetivo) {
-        // Seleccionar el pool de patrones según la puntuación actual
-        let poolDisponible;
-        if (puntuacion < 1000) {
-          poolDisponible = PATRONES_NORMAL.FACIL;
-        } else if (puntuacion < 3000) {
-          poolDisponible = [...PATRONES_NORMAL.FACIL, ...PATRONES_NORMAL.MEDIO];
-        } else {
-          poolDisponible = [...PATRONES_NORMAL.FACIL, ...PATRONES_NORMAL.MEDIO, ...PATRONES_NORMAL.DIFICIL];
-        }
-
-        // Anti-repetición: excluir el índice del último patrón elegido
-        let indice;
-        do {
-          indice = Math.floor(Math.random() * poolDisponible.length);
-        } while (indice === this.ultimoIndicePatron && poolDisponible.length > 1);
-
-        this.ultimoIndicePatron = indice;
-        this.colaPatron = JSON.parse(JSON.stringify(poolDisponible[indice]));
+      if (this.distanciaUltima > 1200) {
+        const indice = Math.floor(Math.random() * PATRONES_NORMAL.length);
+        this.colaPatron = JSON.parse(JSON.stringify(PATRONES_NORMAL[indice]));
         this.distanciaUltima = 0;
       }
       return;
