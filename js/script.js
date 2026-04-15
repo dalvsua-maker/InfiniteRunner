@@ -1124,7 +1124,7 @@ class GestorObstaculos {
       if (Math.random() < 0.05) {
         // Generar un número de parpadeos aleatorio entre 1 y 5
         // (1 parpadeo = ~25 frames matemáticos)
-        const numParpadeos = Math.floor(Math.random() * 4) +2;
+        const numParpadeos = Math.floor(Math.random() * 3) +2;
         this.framesAvisoActual = numParpadeos * 25;
         
         this.telegrafiarTimer = this.framesAvisoActual;
