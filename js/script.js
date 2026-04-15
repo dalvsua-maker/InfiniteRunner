@@ -1579,6 +1579,12 @@ class Juego {
    * @private
    */
   _loop() {
+    if (window.matchMedia("(orientation: portrait)").matches && window.innerWidth < 900) {
+      // Rompemos la lógica aquí pero mantenemos el bucle vivo
+      // para que cuando giren la pantalla vuelva a reanudarse al instante.
+      requestAnimationFrame((ts) => this._loop(ts));
+      return; 
+    }
     if (!this.juegoIniciado) {
       this.renderer.dibujarMenuPrincipal(this.nombreJugador, this.modoDificil, this.modoSeleccionado, this.incrementoExtremo, this.audio);
       return;
@@ -1647,7 +1653,27 @@ class Juego {
     requestAnimationFrame(() => this._loop());
   }
 }
-
+// =============================================================================
+// AUTO-SCROLL AL GIRAR LA PANTALLA
+// =============================================================================
+window.matchMedia("(orientation: landscape)").addEventListener("change", (evento) => {
+    // Si el evento nos dice que acabamos de pasar a modo Horizontal (Landscape)
+    if (evento.matches && window.innerWidth < 900) {
+        
+        // Le damos un pequeño retraso (300ms) para que el navegador 
+        // termine de dibujar y rotar la interfaz antes de mover la cámara
+        setTimeout(() => {
+            const zonaDuelo = document.querySelector(".zona-del-duelo");
+            if (zonaDuelo) {
+                // Hacemos que la pantalla haga scroll suavemente hasta centrar el canvas
+                zonaDuelo.scrollIntoView({ 
+                    behavior: "smooth", 
+                    block: "center" 
+                });
+            }
+        }, 300);
+    }
+});
 // =============================================================================
 // ARRANQUE
 // =============================================================================

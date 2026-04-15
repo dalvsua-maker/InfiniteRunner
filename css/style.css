@@ -246,3 +246,109 @@ color:#1a1712;
         font-size: 0.9rem;
     }
 }
+/* ==========================================================================
+   AVISO DE ORIENTACIÓN (MÓVILES EN VERTICAL) — ACTUALIZADO CON SVGs
+   ========================================================================== */
+.aviso-orientacion {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #2b1b17; /* Fondo oscuro Saloon */
+    z-index: 9999;
+    color: #dfc19c;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.aviso-orientacion .mensaje-aviso {
+    border: 4px solid #a38c6d;
+    background-color: #3e2723;
+    padding: 25px;
+    max-width: 85%;
+    box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    font-family: 'Courier Prime', monospace;
+}
+
+.aviso-orientacion h2 {
+    margin-top: 0;
+   
+    font-weight: bold;
+}
+
+.icono-girar-svg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* Estilo común para todos los SVGs */
+.icono-girar-svg svg {
+    fill: #dfc19c; /* Color del papel */
+    height: 50px;
+}
+
+/* Animación de las flechas y los teléfonos */
+.phone-v {
+    opacity: 1;
+    animation: fadeV 2s infinite ease-in-out;
+}
+
+.arrows-svg {
+    transform-origin: center;
+    animation: girarArrows 2s infinite ease-in-out;
+}
+
+.phone-h {
+    opacity: 0;
+    animation: fadeH 2s infinite ease-in-out;
+}
+
+@keyframes fadeV { 0%, 30% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes fadeH { 0%, 50% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@keyframes girarArrows { 0% { transform: rotate(0deg); } 100% { transform: rotate(-180deg); } }
+
+/* ==========================================================================
+   LÓGICA DE DETECCIÓN Y REDISPOSICIÓN VISUAL (MEDIA QUERIES)
+   ========================================================================== */
+
+/* 1. MÓVIL EN VERTICAL: Bloquear y ocultar todo */
+@media screen and (orientation: portrait) and (max-width: 900px) {
+    .aviso-orientacion {
+        display: flex; /* Mostramos la alerta western */
+    }
+    .pared-saloon {
+        display: none; /* Ocultamos todo el wanted poster */
+    }
+}
+
+/* 2. MÓVIL EN HORIZONTAL: Adaptar el canvas sin ocultar el resto del cartel */
+@media screen and (orientation: landscape) and (max-width: 900px) {
+    /* El cartel ocupa todo el ancho disponible para aprovechar espacio */
+    .cartel-wanted {
+        width: 100%;
+        margin: 0;
+        padding: 10px;
+        border: 5px solid #bcaaa4; /* Borde ligeramente más fino en móvil */
+    }
+
+    .zona-del-duelo {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* Hacemos que el canvas sea "responsive" para que no se salga de la pantalla */
+    #gameCanvas {
+        max-width: 100%;
+        height: auto; /* Mantiene la proporción original de 800x400 */
+        box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+}
