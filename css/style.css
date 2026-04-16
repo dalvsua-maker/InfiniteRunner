@@ -1,14 +1,39 @@
-/* === ESTÉTICA OESTE ARTESANAL: CARTEL WANTED === */
+/* === ESTÉTICA OESTE ARTESANAL: CARTEL WANTED ===
+ *
+ * Paleta temática:
+ *   #3e2723 — madera oscura / tinta principal
+ *   #dfc19c — papel envejecido
+ *   #a38c6d — borde/marco del cartel
+ *   #7b6b4f — líneas divisorias internas
+ *   #e2b04a — oro polvoriento (títulos de recompensa)
+ *
+ * Estructura de capas:
+ *   body (.pared-saloon) → fondo de madera weathered
+ *   main (.cartel-wanted) → el pergamino central
+ *     header (.cabecera-wanted) → "WANTED / FORASTERO RUNNER"
+ *     div (.zona-del-duelo) → contiene el <canvas>
+ *     section (.reglamento-wanted) → grid de tarjetas informativas
+ *     footer (.pie-cartel) → enlace al repositorio
+ *   div (#aviso-orientacion) → overlay de bloqueo en retrato móvil
+ */
 
+/* Importa la fuente monoespaciada de estilo máquina de escribir */
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
-/* Reset global */
-* {
+/* ─── RESET GLOBAL ──────────────────────────────────────────────────────────── */
+
+*  {
     box-sizing: border-box;
-    image-rendering: pixelated; /* Crucial para pixel art */
+    image-rendering: pixelated; /* Preserva la nitidez del pixel art del canvas */
 }
 
-/* 1. La Pared del Saloon: Simulación de madera weathered weathered weathered weathered weathered weathered weathered weathered */
+/* ─── 1. PARED DEL SALOON (body) ────────────────────────────────────────────
+ * Simula una pared de tablas de madera desgastada mediante tres capas de
+ * background superpuestas:
+ *   - linear-gradient vertical (vetas horizontales de la madera)
+ *   - linear-gradient horizontal (líneas de separación entre tablas)
+ *   - radial-gradient (nudos y marcas irregulares de la madera)
+ */
 body {
     margin: 0;
     padding: 0;
@@ -17,18 +42,20 @@ body {
     justify-content: center;
     min-height: 100vh;
     overflow-x: hidden;
-    
-    /* Simulación de madera weathered weathered weathered weathered */
-    background-color: #3e2723; /* Madera oscura */
-    background-image: 
+
+    /* Madera base oscura */
+    background-color: #3e2723;
+    /* Capas combinadas: vetas verticales + líneas horizontales + puntitos de nudo */
+    background-image:
         linear-gradient(90deg, #3e2723 5px, transparent 5px),
         linear-gradient(#321909 2px, transparent 2px),
         radial-gradient(#5d4037 1px, transparent 1px);
     background-size: 50px 100%, 100% 50px, 40px 40px;
     background-position: 0 0, 0 0, 15px 15px;
-    filter: saturate(0.85); /* Desaturado suave */
+    filter: saturate(0.85); /* Desaturación suave para dar sensación de madera vieja */
 }
 
+/* Contenedor centrado que limita el ancho máximo del cartel */
 .pared-saloon {
     width: 100%;
     max-width: 1000px;
@@ -38,34 +65,43 @@ body {
     align-items: flex-start;
 }
 
-/* 2. El Cartel "WANTED": Pergamino envejecido weathered weathered weathered */
+/* ─── 2. EL CARTEL WANTED (main) ────────────────────────────────────────────
+ * Simula un pergamino de papel amarillento pegado en la pared:
+ *   - Fondo #dfc19c (papel viejo desaturado)
+ *   - Borde sólido marrón + sombra física que lo alza de la pared
+ *   - radial-gradient interno para imitar la textura de fibra del papel
+ */
 .cartel-wanted {
-    background-color: #dfc19c; /* Papel viejo desaturado */
-    color: #3e2723; /* Texto weathered */
-width: 95%; 
+    background-color: #dfc19c; /* Color base del papel envejecido */
+    color: #3e2723;            /* Tinta de imprenta oscura */
+    width: 95%;
     max-width: 800px;
     padding: 30px;
-    
-    /* Bordes quemados e irregulares */
+
+    /* Marco de madera con sombra que simula que el cartel está colgado */
     border: 5px solid #a38c6d;
     border-radius: 4px;
-    box-shadow: 
-        10px 10px 0px rgba(0,0,0,0.4), /* Sombra física desaturada */
-        inset 0 0 50px rgba(163, 140, 109, 0.4); /* Desgaste interno desaturado */
-    
-    /* Patrón sutil desaturado de fibra de papel */
+    box-shadow:
+        10px 10px 0px rgba(0,0,0,0.4),       /* Sombra exterior (efecto 3D) */
+        inset 0 0 50px rgba(163, 140, 109, 0.4); /* Desgaste interno del papel */
+
+    /* Textura sutil de grano de papel */
     background-image: radial-gradient(#d4b996 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
-/* 3. Cabecera Grabada desaturado desaturado desaturado desaturado */
+/* ─── 3. CABECERA GRABADA ───────────────────────────────────────────────────
+ * Zona de título principal con separador de línea punteada inferior
+ * que imita el pespunte de los carteles de la época.
+ */
 .cabecera-wanted {
     text-align: center;
     margin-bottom: 25px;
-    border-bottom: 4px dashed #7b6b4f;
+    border-bottom: 4px dashed #7b6b4f; /* Línea divisoria estilo costura */
     padding-bottom: 20px;
 }
 
+/* "WANTED" — título principal grabado a fuego */
 .titulo-principal {
     font-size: 4rem;
     font-weight: 700;
@@ -73,18 +109,20 @@ width: 95%;
     text-transform: uppercase;
     margin: 0;
     letter-spacing: 8px;
-    text-shadow: 2px 2px 0px #a38c6d; /* Efecto grabado desaturado */
+    text-shadow: 2px 2px 0px #a38c6d; /* Efecto de relieve/grabado */
 }
 
+/* Subtítulo de recompensa: color dorado polvoriento */
 .recompensa {
     font-size: 1.8rem;
-    color: #e2b04a; /* Oro polvoriento desaturado */
+    color: #e2b04a; /* Dorado desaturado */
     margin: 10px 0;
     font-weight: bold;
     text-transform: uppercase;
-    text-shadow: 3px 3px 0px #7b6b4f;
+    text-shadow: 3px 3px 0px #7b6b4f; /* Sombra más gruesa para mayor dramatismo */
 }
 
+/* Versión y año, en tono muy apagado */
 .subtitulo {
     font-size: 0.9rem;
     color: #8c7f6b;
@@ -92,7 +130,9 @@ width: 95%;
     letter-spacing: 2px;
 }
 
-/* 4. El Lienzo del Duelo Duelo Duelo Centrado desaturado */
+/* ─── 4. LIENZO DEL DUELO (zona del canvas) ────────────────────────────────
+ * Contenedor flex para centrar el <canvas> horizontalmente.
+ */
 .zona-del-duelo {
     width: 100%;
     display: flex;
@@ -100,78 +140,85 @@ width: 95%;
     margin: 20px 0;
 }
 
+/* Canvas del juego: responsive con aspect-ratio fijo 2:1 (800×400)
+ * Propiedades táctiles desactivadas para evitar comportamientos no deseados
+ * en dispositivos móviles (menús contextuales, selección, scroll accidental).
+ */
 #gameCanvas {
     width: 100%;
     height: auto;
-    aspect-ratio: 2 / 1;
-    background-color: #fad7a0; /* Arena weathered desaturada */
-    
-    /* Borde estilo weathered weathered weathered desaturado */
-    border: 8px solid #5d4037; /* Madera weathered */
+    aspect-ratio: 2 / 1;         /* Mantiene la proporción original 800×400 */
+    background-color: #fad7a0;   /* Color de arena del desierto */
+
+    /* Marco estilo madera recia con sombra que eleva el canvas */
+    border: 8px solid #5d4037;
     border-radius: 2px;
     box-shadow: 0 10px 0px #1a1712;
-    
+
     display: block;
     max-width: 800px;
-  
-    -webkit-tap-highlight-color: transparent;
-    
-    /* Evita que se seleccione el canvas como si fuera texto o imagen */
-    -webkit-touch-callout: none;
+
+    /* Deshabilitar comportamientos táctiles no deseados en móvil */
+    -webkit-tap-highlight-color: transparent;  /* Sin destello al tocar */
+    -webkit-touch-callout: none;               /* Sin menú de "Guardar imagen" */
     -webkit-user-select: none;
-    user-select: none;
-    
-    /* Evita menús contextuales al mantener pulsado */
-    touch-action: none;
+    user-select: none;                         /* Sin selección de contenido */
+    touch-action: none;                        /* El JS gestiona todos los toques */
 }
 
-/* 5. Reglamento con Hover Efecto Hover Efecto Hover Efecto Hover desaturado */
+/* ─── 5. REGLAMENTO (grid de tarjetas) ─────────────────────────────────────
+ * Grid responsivo con columnas mínimas de 200px.
+ * Cada tarjeta (.seccion-texto) reacciona al hover con un efecto
+ * de "el papel se convierte en madera".
+ */
 .reglamento-wanted {
     display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     margin-top: 30px;
     width: 100%;
 }
 
+/* Tarjeta individual de reglamento */
 .seccion-texto {
-    background-color: #d4b996; /* Papel weathered desaturado */
+    background-color: #d4b996; /* Papel weathered ligeramente más oscuro que el fondo */
     color: #3e2723;
     padding: 15px;
     border: 2px solid #a38c6d;
     cursor: default;
-    
-    /* Efecto weathered weathered weathered weathered desaturado */
-    transition: all 0.3s ease-out; /* Suave desaturado */
-    word-wrap: break-word; 
+    transition: all 0.3s ease-out; /* Transición suave para el efecto hover */
+    word-wrap: break-word;
     box-sizing: border-box;
 }
 
-/* Hover Artesanal: El papel se vuelve madera desaturado */
+/* Hover: la tarjeta "se convierte en madera" y se levanta de la página */
 .seccion-texto:hover {
-    background-color: #3e352a; /* Madera weathered desaturada */
-    color: #dfc19c; /* Papel viejo desaturado */
-    transform: translateY(-5px); /* Se levanta desaturado */
+    background-color: #3e352a;       /* Madera oscura */
+    color: #dfc19c;                  /* Texto color papel (inversión de colores) */
+    transform: translateY(-5px);     /* Elevación física al pasar el ratón */
     border-color: #5d4037;
-    box-shadow: 5px 5px 0 #1a1712;
+    box-shadow: 5px 5px 0 #1a1712;  /* Sombra más pronunciada al elevarse */
 }
 
+/* Encabezado de tarjeta: texto en mayúsculas con línea divisoria */
 .seccion-texto h3 {
     margin-top: 0;
     font-size: 1.1rem;
     color: #3e2723;
     text-transform: uppercase;
-    border-bottom: 2px solid #7b6b4f;
+    border-bottom: 2px solid #7b6b4f; /* Línea inferior estilo impresión antigua */
     padding-bottom: 5px;
-    transition: all 0.3s ease-out desaturado;
+    transition: all 0.3s ease-out;
 }
 
-/* Cambio de color del h3 al hover desaturado */
+/* El h3 también invierte su color al hacer hover en la tarjeta */
 .seccion-texto:hover h3 {
     color: #dfc19c;
 }
 
-/* --- PIE DE CARTEL DESATURADO --- */
+/* ─── 6. PIE DE CARTEL ──────────────────────────────────────────────────────
+ * Enlace al repositorio con línea divisoria superior punteada.
+ */
 .pie-cartel {
     text-align: center;
     margin-top: 40px;
@@ -180,29 +227,36 @@ width: 95%;
     border-top: 2px dashed #7b6b4f;
     padding-top: 15px;
 }
-/* Tarjeta de updates a ancho completo */
+
+/* ─── 7. TARJETA DE ACTUALIZACIONES ────────────────────────────────────────
+ * Clase especial que fuerza al registro de updates a ocupar
+ * todo el ancho del grid (todas las columnas), independientemente
+ * del número de columnas activo.
+ */
 .update-log {
-    grid-column: 1 / -1; /* Esto hace que ocupe todas las columnas del grid */
+    grid-column: 1 / -1; /* Span completo: de la primera a la última columna */
     margin-top: 10px;
     text-align: left;
 }
 
+/* Lista de entradas del registro de cambios */
 .lista-updates {
-    list-style: none;
+    list-style: none; /* Sin bullet points nativos; usamos el pseudoelemento ::before */
     padding: 0;
     margin: 10px 0 0 0;
 }
 
+/* Cada entrada del changelog con separador inferior punteado */
 .lista-updates li {
     font-size: 0.9rem;
     margin-bottom: 8px;
     padding-left: 15px;
-    position: relative;
+    position: relative;         /* Necesario para posicionar el ::before */
     border-bottom: 1px dashed #a38c6d;
     padding-bottom: 5px;
 }
 
-/* Decoración estilo bala o punto de lista */
+/* Decoración estilo "guillemets" como marcador de lista */
 .lista-updates li::before {
     content: "»";
     position: absolute;
@@ -211,30 +265,35 @@ width: 95%;
     font-weight: bold;
 }
 
+/* Número de versión destacado con subrayado */
 .lista-updates li strong {
     color: #5d4037;
     text-decoration: underline;
 }
-#footerlink:link{
 
-color:#7b6b4f;
-
-
+/* ─── 8. ESTILOS DE ENLACE (footer) ────────────────────────────────────────
+ * Estados :link, :visited y :hover del enlace del pie de página.
+ */
+#footerlink:link {
+    color: #7b6b4f; /* Color neutro: papel/madera no visitado */
 }
-#footerlink:visited{
 
-color:#1a1712;
-
-
+#footerlink:visited {
+    color: #1a1712; /* Más oscuro una vez visitado */
 }
+
 #footerlink:hover {
-    opacity: 0.7;             /* Se vuelve un poco más transparente (70%) */
-    transform: scale(1.1);    /* Crece un 10% */
+    opacity: 0.7;          /* Semitransparente al pasar el ratón */
+    transform: scale(1.1); /* Ligero zoom para indicar interactividad */
 }
 
+/* ─── 9. RESPONSIVE — PANTALLAS PEQUEÑAS (<480px) ──────────────────────────
+ * Reducción de tamaños tipográficos para móviles muy pequeños
+ * donde los textos grandes desbordarían el contenedor.
+ */
 @media (max-width: 480px) {
     .titulo-principal {
-        font-size: 3rem; /* Wanted un poco más pequeño */
+        font-size: 3rem; /* "WANTED" reducido para caber en pantallas pequeñas */
     }
     .recompensa {
         font-size: 1.2rem;
@@ -246,18 +305,24 @@ color:#1a1712;
         font-size: 0.9rem;
     }
 }
+
 /* ==========================================================================
-   AVISO DE ORIENTACIÓN (MÓVILES EN VERTICAL) — ACTUALIZADO CON SVGs
-   ========================================================================== */
+   10. AVISO DE ORIENTACIÓN (overlay para móviles en vertical / portrait)
+   ==========================================================================
+ * Cuando el usuario tiene el teléfono en vertical y la pantalla es estrecha
+ * (< 900px), se muestra este overlay que bloquea toda la interfaz y pide
+ * al usuario que gire el dispositivo.
+ * El icono animado muestra la transición de teléfono vertical → horizontal.
+ */
 .aviso-orientacion {
-    display: none; /* Oculto por defecto */
-    position: fixed;
+    display: none;    /* Oculto por defecto; se activa con la media query de portrait */
+    position: fixed;  /* Cubre toda la ventana, por encima de todo el contenido */
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #2b1b17; /* Fondo oscuro Saloon */
-    z-index: 9999;
+    background-color: #2b1b17; /* Fondo oscuro tipo interior de saloon */
+    z-index: 9999;             /* Encima de cualquier otro elemento */
     color: #dfc19c;
     flex-direction: column;
     justify-content: center;
@@ -265,6 +330,7 @@ color:#1a1712;
     text-align: center;
 }
 
+/* Caja interior del aviso: estilo "tarjeta del cartel wanted" */
 .aviso-orientacion .mensaje-aviso {
     border: 4px solid #a38c6d;
     background-color: #3e2723;
@@ -276,10 +342,10 @@ color:#1a1712;
 
 .aviso-orientacion h2 {
     margin-top: 0;
-   
     font-weight: bold;
 }
 
+/* Contenedor de los tres SVGs: teléfono vertical + flechas + teléfono horizontal */
 .icono-girar-svg {
     display: flex;
     justify-content: center;
@@ -288,54 +354,86 @@ color:#1a1712;
     margin-top: 25px;
 }
 
-/* Estilo común para todos los SVGs */
+/* Color y tamaño comunes a todos los SVGs del icono */
 .icono-girar-svg svg {
-    fill: #dfc19c; /* Color del papel */
+    fill: #dfc19c; /* Color papel */
     height: 50px;
 }
 
-/* Animación de las flechas y los teléfonos */
+/* ── Animaciones del icono de rotación ──────────────────────────────────────
+ * Se animan en 3 fases sincronizadas para transmitir el gesto de giro:
+ *   1. Teléfono vertical visible → se desvanece
+ *   2. Flechas rotan 180° (simulan el giro)
+ *   3. Teléfono horizontal aparece
+ */
+
+/* Teléfono vertical: visible al inicio, desaparece a mitad de ciclo */
 .phone-v {
     opacity: 1;
     animation: fadeV 2s infinite ease-in-out;
 }
 
+/* Flechas: rotan completamente durante el ciclo */
 .arrows-svg {
     transform-origin: center;
     animation: girarArrows 2s infinite ease-in-out;
 }
 
+/* Teléfono horizontal: aparece en la segunda mitad del ciclo */
 .phone-h {
     opacity: 0;
     animation: fadeH 2s infinite ease-in-out;
 }
 
-@keyframes fadeV { 0%, 30% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes fadeH { 0%, 50% { opacity: 0; } 70%, 100% { opacity: 1; } }
-@keyframes girarArrows { 0% { transform: rotate(0deg); } 100% { transform: rotate(-180deg); } }
+/* El teléfono vertical desaparece en los primeros 50% del ciclo */
+@keyframes fadeV {
+    0%, 30%  { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* El teléfono horizontal aparece en los últimos 30% del ciclo */
+@keyframes fadeH {
+    0%, 50%  { opacity: 0; }
+    70%, 100% { opacity: 1; }
+}
+
+/* Las flechas completan un giro de 180° durante todo el ciclo */
+@keyframes girarArrows {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(-180deg); }
+}
 
 /* ==========================================================================
-   LÓGICA DE DETECCIÓN Y REDISPOSICIÓN VISUAL (MEDIA QUERIES)
-   ========================================================================== */
+   11. MEDIA QUERIES DE ORIENTACIÓN Y RESPONSIVE
+   ==========================================================================
 
-/* 1. MÓVIL EN VERTICAL: Bloquear y ocultar todo */
+   REGLA 1 — Móvil en VERTICAL (portrait + ancho < 900px):
+     Muestra el overlay de aviso y oculta el cartel entero.
+     El juego no puede jugarse en vertical porque el canvas sería demasiado
+     estrecho para ver los proyectiles con tiempo de reacción.
+*/
 @media screen and (orientation: portrait) and (max-width: 900px) {
     .aviso-orientacion {
-        display: flex; /* Mostramos la alerta western */
+        display: flex; /* Activa el overlay de bloqueo */
     }
     .pared-saloon {
-        display: none; /* Ocultamos todo el wanted poster */
+        display: none; /* Oculta todo el contenido del juego */
     }
 }
 
-/* 2. MÓVIL EN HORIZONTAL: Adaptar el canvas sin ocultar el resto del cartel */
+/*
+   REGLA 2 — Móvil en HORIZONTAL (landscape + ancho < 900px):
+     Adapta el layout para aprovechar el espacio reducido de los móviles
+     rotados. El canvas ocupa el 100% del ancho disponible manteniendo
+     su ratio 2:1 gracias al height: auto del canvas.
+*/
 @media screen and (orientation: landscape) and (max-width: 900px) {
-    /* El cartel ocupa todo el ancho disponible para aprovechar espacio */
+    /* El cartel se expande a todo el ancho eliminando márgenes sobrantes */
     .cartel-wanted {
         width: 100%;
         margin: 0;
         padding: 10px;
-        border: 5px solid #bcaaa4; /* Borde ligeramente más fino en móvil */
+        border: 5px solid #bcaaa4; /* Borde ligeramente más fino en pantalla pequeña */
     }
 
     .zona-del-duelo {
@@ -344,11 +442,11 @@ color:#1a1712;
         justify-content: center;
         align-items: center;
     }
-    
-    /* Hacemos que el canvas sea "responsive" para que no se salga de la pantalla */
+
+    /* El canvas escala al 100% de su contenedor sin deformarse */
     #gameCanvas {
         max-width: 100%;
-        height: auto; /* Mantiene la proporción original de 800x400 */
+        height: auto; /* Respeta el aspect-ratio 800×400 original */
         box-shadow: 0 0 20px rgba(0,0,0,0.8);
     }
 }
