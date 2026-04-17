@@ -940,7 +940,7 @@ class Renderer {
     ctx.fillStyle = COLOR_TINTA;
     ctx.textAlign = "center";
 
-    ctx.font = `bold 16px ${FUENTE}`;
+    ctx.font = `bold 18px ${FUENTE}`;
     ctx.fillText("PUNTUACIÓN FINAL", this.canvas.width / 2, 35);
     ctx.font = `bold 32px ${FUENTE}`;
     ctx.fillText(puntuacion, this.canvas.width / 2, 70);
@@ -970,7 +970,7 @@ class Renderer {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.font = `bold 15px ${FUENTE}`;
+    ctx.font = `bold 18px ${FUENTE}`;
     listaTopScores.slice(0, 5).forEach((score, index) => {
       const yPos = yTablaStart + 35 + index * 28;
       const nombreCorto =
@@ -1002,7 +1002,7 @@ class Renderer {
     ctx.textAlign = "center";
     if (puntuacion < (modoDificil ? recordExtremo : recordNormal)) {
       ctx.fillStyle = COLOR_TINTA;
-      ctx.font = "bold 16px 'Courier Prime'";
+      ctx.font = "bold 20px 'Courier Prime'";
       const frase = FRASES_DERROTA[puntuacion % FRASES_DERROTA.length];
       ctx.fillText(frase, this.canvas.width / 2, yFinalTabla + 25);
     }
