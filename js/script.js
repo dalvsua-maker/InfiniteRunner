@@ -1759,16 +1759,15 @@ class Leaderboard {
         }
     }
 
-    renderizar(usuarios) {
-        const cuerpo = document.getElementById('cuerpo-tabla');
-        cuerpo.innerHTML = usuarios.map((u, i) => `
-            <tr>
-                <td>#${(this.paginaActual - 1) * 10 + (i + 1)}</td>
-                <td>${u.nombre}</td>
-                <td>${u.puntos}</td>
-            </tr>
-        `).join('');
-    }
+ renderizar(usuarios) {
+    const cuerpo = document.getElementById('cuerpo-tabla');
+    cuerpo.innerHTML = usuarios.map((u, i) => `
+        <tr>
+            <td>#${(this.paginaActual - 1) * 10 + (i + 1)}</td>
+            <td title="${u.nombre}">${u.nombre}</td> <td><strong>${u.puntos}</strong></td>
+        </tr>
+    `).join('');
+}
 
     cambiarModo(modo) {
         this.modoActual = modo;

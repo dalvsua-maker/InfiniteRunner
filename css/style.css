@@ -449,57 +449,157 @@ body {
         box-shadow: 0 0 20px rgba(0,0,0,0.8);
     }
 }
+/* 1. Contenedor global: solo centra el cartel, el aside no afecta a este flujo.
+ * Sin overflow hidden para que el aside absoluto nunca quede recortado.
+ */
 .contenedor-global {
     display: flex;
-    align-items: flex-start;
     justify-content: center;
-    gap: 40px; /* Espacio entre la tabla y el cartel */
-    padding: 20px;
+    align-items: flex-start;
+    width: 100%;
+    padding: 40px 20px;
+    box-sizing: border-box;
 }
 
+/* 2. El cartel ocupa su sitio centrado de forma totalmente independiente. */
+.cartel-wanted {
+    /* Los estilos de fondo, borde y padding ya están definidos más arriba */
+}
+
+/* 3. El leaderboard usa position: fixed anclado a la ventana.
+ * Así nunca queda recortado por ningún padre, y el cartel
+ * permanece exactamente en el centro sin desplazarse.
+ * left: calc(50vw - 430px - 30px - 280px) significa:
+ *   50vw   → centro de la pantalla
+ *   - 430px → mitad del cartel (~860px / 2)
+ *   - 30px  → separación visual entre aside y cartel
+ *   - 280px → ancho del propio aside
+ */
 .registro-clasificaciones {
-    background: #dfc19c;
-    border: 4px solid #5d4037;
+    position: fixed;
+    top: 70px;
+    left: calc(50vw - 430px - 30px - 280px);
+    width: 280px;
+    z-index: 10;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;           /* Scroll interno si la tabla es muy larga */
+
+    /* Estética original */
+    background: #d7b899;
+    border: 6px solid #4e342e;
     padding: 15px;
-    width: 250px;
-    box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
-    font-family: 'Courier Prime', monospace;
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.4);
 }
 
 .titulo-registro {
+    font-size: 1.5rem;
+    color: #3e2723;
     text-align: center;
-    border-bottom: 2px solid #5d4037;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
+    border-bottom: 3px double #4e342e;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+/* Selector de modo: dos botones centrados en fila */
+.selector-modo {
+    display: flex;
+    gap: 6px;
     margin-bottom: 10px;
 }
 
+.selector-modo button {
+    flex: 1; /* Cada botón ocupa la mitad del ancho disponible */
+}
+
+/* Tabla sin desbordamiento horizontal:
+ * table-layout: fixed + width: 100% hace que las columnas
+ * respeten el ancho del contenedor sin nunca sobresalir. */
 #tabla-leaderboard {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
-    font-size: 0.9em;
+    /* Sin overflow propio: el aside ya tiene overflow-y: auto */
 }
 
-#tabla-leaderboard th { border-bottom: 2px solid #5d4037; padding: 5px; }
-#tabla-leaderboard td { padding: 8px 5px; text-align: center; }
+/* Columnas con anchos proporcionales al espacio disponible */
+#tabla-leaderboard th:nth-child(1) { width: 20%; }  /* POS */
+#tabla-leaderboard th:nth-child(2) { width: 55%; }  /* NOMBRE */
+#tabla-leaderboard th:nth-child(3) { width: 25%; }  /* PUNTOS */
 
-.selector-modo, .paginacion {
+#tabla-leaderboard th {
+    font-size: 0.75rem;
+    padding: 6px 4px;
+    text-align: left;
+    color: #3e2723;
+    border-bottom: 2px solid #4e342e;
+}
+
+#tabla-leaderboard td {
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(78, 52, 46, 0.2);
+    overflow: hidden;
+    text-overflow: ellipsis; /* "..." si el nombre es muy largo */
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+/* Paginación: botones y texto perfectamente centrados */
+.paginacion {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed #7b6b4f;
 }
 
+#info-pagina {
+    font-size: 0.85rem;
+    color: #3e2723;
+    min-width: 55px;        /* Ancho fijo para que no baile al cambiar de página */
+    text-align: center;
+}
+
+/* Estilo común a todos los botones del leaderboard */
 .selector-modo button, .paginacion button {
-    background: #a38c6d;
-    border: none;
+    background: #5d4037;
+    border: 2px solid #3e2723;
+    color: #dfc19c;
+    font-family: 'Courier Prime', monospace;
+    font-weight: bold;
+    padding: 6px 12px;
     cursor: pointer;
-    padding: 5px;
-    font-family: inherit;
-    color: white;
+    transition: background 0.2s, transform 0.2s;
 }
 
-.selector-modo button.active { background: #3e2723; }
+.selector-modo button:hover, .paginacion button:hover {
+    background: #8d6e63;
+    transform: translateY(-2px);
+}
 
-/* En móvil, ocultamos esto para no estorbar el canvas */
-@media (max-width: 1100px) {
-    .contenedor-global { flex-direction: column; align-items: center; }
-    .registro-clasificaciones { order: 2; width: 100%; max-width: 600px; }
+.selector-modo button.active {
+    background: #e2b04a;
+    color: #3e2723;
+}
+
+/* En pantallas donde el aside no cabe a la izquierda del cartel,
+ * lo sacamos del fixed y lo ponemos debajo del cartel en flujo normal. */
+@media screen and (max-width: 1250px) {
+    .contenedor-global {
+        flex-direction: column;
+        align-items: center;
+    }
+    .registro-clasificaciones {
+        position: static;       /* Vuelve al flujo normal, se ve siempre */
+        width: 100%;
+        max-width: 850px;
+        max-height: none;
+        overflow-y: visible;
+        order: 2;               /* Aparece debajo del cartel */
+    }
+    .cartel-wanted {
+        order: 1;
+    }
 }
