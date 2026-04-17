@@ -186,6 +186,48 @@ app.get("/top-scores", (req, res) => {
   });
 });
 
+// Ruta para el Leaderboard con paginación
+app.get("/leaderboard", (req, res) => {
+  const dificultad = req.query.dificultad || "Normal";
+  const limite = parseInt(req.query.limit) || 10;
+  const pagina = parseInt(req.query.page) || 1;
+  const offset = (pagina - 1) * limite;
+
+  // 1. Consulta para obtener los datos
+  const queryData = `
+    SELECT u.nombre, MAX(s.puntos) as puntos 
+    FROM scores s 
+    JOIN usuarios u ON s.usuario_id = u.id 
+    WHERE s.dificultad = ?
+    GROUP BY u.id 
+    ORDER BY puntos DESC 
+    LIMIT ? OFFSET ?
+  `;
+
+  // 2. Consulta para saber el total de páginas
+  const queryCount = `
+    SELECT COUNT(DISTINCT usuario_id) as total 
+    FROM scores 
+    WHERE dificultad = ?
+  `;
+
+  db.query(queryCount, [dificultad], (err, countResult) => {
+    if (err) return res.status(500).send(err);
+    
+    const totalRegistros = countResult[0].total;
+    const totalPaginas = Math.ceil(totalRegistros / limite);
+
+    db.query(queryData, [dificultad, limite, offset], (err, results) => {
+      if (err) return res.status(500).send(err);
+      res.json({
+        data: results,
+        totalPaginas: totalPaginas,
+        paginaActual: pagina
+      });
+    });
+  });
+});
+
 // ─── ARRANQUE ─────────────────────────────────────────────────────────────────
 
 /**

@@ -27,7 +27,34 @@
         </div>
     </div>
     <div class="pared-saloon">
+        <div class="contenedor-global">
+    
+    <aside class="registro-clasificaciones">
+        <h2 class="titulo-registro">REGISTRO CIVIL</h2>
         
+        <div class="selector-modo">
+            <button onclick="leaderboard.cambiarModo('Normal')" id="btn-normal" class="active">Normal</button>
+            <button onclick="leaderboard.cambiarModo('Extremo')" id="btn-extremo">Extremo</button>
+        </div>
+
+        <table id="tabla-leaderboard">
+            <thead>
+                <tr>
+                    <th>POS</th>
+                    <th>NOMBRE</th>
+                    <th>PUNTOS</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+                </tbody>
+        </table>
+
+        <div class="paginacion">
+            <button onclick="leaderboard.paginaAnterior()">◀</button>
+            <span id="info-pagina">Pág 1</span>
+            <button onclick="leaderboard.paginaSiguiente()">▶</button>
+        </div>
+    </aside>
         <main class="cartel-wanted">
 
             <header class="cabecera-wanted">
@@ -97,6 +124,7 @@
                 <a href="https://github.com/dalvsua-maker/InfiniteRunner" id="footerlink">Repositorio en github</a>
             </footer>
         </main>
+        </div>
     </div>
 
     <script src="./js/script.js"></script>

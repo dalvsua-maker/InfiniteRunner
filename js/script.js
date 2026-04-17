@@ -1738,6 +1738,63 @@ class Juego {
     requestAnimationFrame(() => this._loop());
   }
 }
+class Leaderboard {
+    constructor() {
+        this.paginaActual = 1;
+        this.modoActual = 'Normal';
+        this.totalPaginas = 1;
+        this.cargar();
+    }
+
+    async cargar() {
+        try {
+            const res = await fetch(`${API_BASE}/leaderboard?dificultad=${this.modoActual}&page=${this.paginaActual}&limit=10`);
+            const data = await res.json();
+            
+            this.totalPaginas = data.totalPaginas;
+            this.renderizar(data.data);
+            document.getElementById('info-pagina').innerText = `Pág ${this.paginaActual}/${this.totalPaginas}`;
+        } catch (err) {
+            console.error("Error cargando tabla:", err);
+        }
+    }
+
+    renderizar(usuarios) {
+        const cuerpo = document.getElementById('cuerpo-tabla');
+        cuerpo.innerHTML = usuarios.map((u, i) => `
+            <tr>
+                <td>#${(this.paginaActual - 1) * 10 + (i + 1)}</td>
+                <td>${u.nombre}</td>
+                <td>${u.puntos}</td>
+            </tr>
+        `).join('');
+    }
+
+    cambiarModo(modo) {
+        this.modoActual = modo;
+        this.paginaActual = 1;
+        document.getElementById('btn-normal').classList.toggle('active', modo === 'Normal');
+        document.getElementById('btn-extremo').classList.toggle('active', modo === 'Extremo');
+        this.cargar();
+    }
+
+    paginaSiguiente() {
+        if (this.paginaActual < this.totalPaginas) {
+            this.paginaActual++;
+            this.cargar();
+        }
+    }
+
+    paginaAnterior() {
+        if (this.paginaActual > 1) {
+            this.paginaActual--;
+            this.cargar();
+        }
+    }
+}
+
+// Inicializar la tabla al cargar la página
+const leaderboard = new Leaderboard();
 // =============================================================================
 // AUTO-SCROLL AL GIRAR LA PANTALLA
 // =============================================================================
